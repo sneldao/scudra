@@ -20,7 +20,7 @@ A cloud agent is a program whose body is infrastructure: a browser in Frankfurt,
 
 ## Featured experience
 
-- **[Blindspot](apps/blindspot)** — Privacy-preserving onchain investigation. Resolve an ENS name, run Mobula inside an ephemeral sandbox, enrich off-chain context through a stealth browser, and receive a verdict.
+- **[Blindspot](apps/blindspot)** — Privacy-preserving onchain investigation. Look up an ENS name and watch an agent quietly investigate it, then receive a verdict — all from a disposable cloud machine that leaves no trace.
 
 ## Repository structure
 
@@ -73,13 +73,13 @@ Read the full manifesto in [`content/manifesto.md`](content/manifesto.md) or at 
 
 Each recipe is a real, runnable agent:
 
-- [Blindspot — The Investigator](content/recipes/blindspot.md)
-- [Stealth Scraper — The Witness](content/recipes/stealth-scraper.md)
+- [Blindspot](content/recipes/blindspot.md)
+- [The Witness](content/recipes/stealth-scraper.md)
 - [Code Interpreter — The Analyst](content/recipes/code-interpreter.md)
 - [Desktop Operator — The Controller](content/recipes/desktop-operator.md)
 - [Browser Profiles — The Chameleon](content/recipes/browser-profiles.md)
 - [Session Recording — The Archivist](content/recipes/the-archivist.md)
-- [Sandbox Preview — The Builder](content/recipes/the-builder.md)
+- [The Builder](content/recipes/the-builder.md)
 
 See [`content/roadmap.md`](content/roadmap.md) for the full operating plan:
 the characters, the thesis, the sequencing, and the publishing formula.

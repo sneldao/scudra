@@ -213,7 +213,7 @@ export async function investigate(ensName: string, opts: InvestigateOptions = {}
         riskScore: risk.overallScore,
         riskLabel: riskLabelFor(risk.overallScore),
         riskSummary: risk.summary,
-        privacyVerdict: "sandbox destroyed · no trace · you were never here",
+        privacyVerdict: "sandbox destroyed · no trace · you were never there",
         reportPath,
         sandboxId: sandboxHandle.id,
         egressIp: offChain[0]?.egressIp ?? "unknown",

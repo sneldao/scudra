@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro"
+import { EXPERIENCE_URLS } from "@scudra/shared"
 ---
 
 <Layout>
@@ -12,11 +13,12 @@ import Layout from "../layouts/Layout.astro"
         Software that runs, acts, and disappears in the cloud.
       </h1>
       <p class="text-lg text-ink-muted max-w-[55ch] mt-6 leading-relaxed" data-reveal>
-        Scudra is a collection of real-world recipes and experiences for cloud agents: ephemeral browsers, sandboxes, and desktops that do work on your behalf and leave no trace.
+        Scudra is a collection of live demos and recipes for software that does a job in the cloud
+        and leaves no trace behind — no laptop, no history, no fingerprints.
       </p>
       <div class="flex flex-wrap gap-3 mt-8" data-reveal>
-        <a href="/recipes" class="sc-button-primary">Browse recipes</a>
-        <a href="/experiences" class="sc-button-secondary">Explore experiences</a>
+        <a href="/experiences" class="sc-button-accent">Try an experience</a>
+        <a href="/recipes" class="sc-button-secondary">Browse the recipes</a>
       </div>
     </div>
   </section>
@@ -45,10 +47,12 @@ import Layout from "../layouts/Layout.astro"
     <div class="sc-container">
       <h2 class="font-serif text-3xl mb-4" data-reveal>Featured experience</h2>
       <p class="text-ink-muted max-w-[60ch] mb-8 leading-relaxed" data-reveal>
-        Blindspot is a privacy-preserving onchain investigation agent. It resolves an ENS name, runs Mobula inside a Solari sandbox, enriches off-chain context through a stealth browser, and delivers a verdict you can take with you.
+        Blindspot is a privacy-preserving onchain investigation agent. Look up an ENS name and watch it quietly
+        investigate — resolving the wallet, checking onchain holdings, and digging up off-chain context — then hand
+        you a verdict. It does all of it from a disposable cloud machine that vanishes when you're done.
       </p>
       <div class="flex flex-wrap gap-3" data-reveal>
-        <a href="/experiences#blindspot" class="sc-button-accent">Open the dossier</a>
+        <a href={EXPERIENCE_URLS.blindspot} class="sc-button-accent">Open the dossier</a>
         <a href="/recipes/blindspot" class="sc-button-secondary">Read the recipe</a>
       </div>
     </div>

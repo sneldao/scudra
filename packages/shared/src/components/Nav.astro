@@ -1,5 +1,9 @@
 ---
 import { SITE, NAV } from "../index.js"
+
+const path = Astro.url.pathname
+const isActive = (href: string) =>
+  href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`)
 ---
 
 <header class="bg-paper/80 backdrop-blur-sm sticky top-0 z-50 border-b border-black/5">
@@ -7,10 +11,26 @@ import { SITE, NAV } from "../index.js"
     <a href="/" class="font-serif text-2xl text-ink no-underline tracking-tight">
       {SITE.name}
     </a>
-    <ul class="flex items-center gap-6 list-none m-0 p-0 text-sm">
+    <button
+      id="nav-toggle"
+      class="nav-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="nav-list"
+      aria-label="Toggle navigation"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <ul id="nav-list" class="flex items-center gap-6 list-none m-0 p-0 text-sm">
       {NAV.map((item) => (
         <li>
-          <a href={item.href} class="text-ink-muted hover:text-ink transition-colors no-underline">
+          <a
+            href={item.href}
+            class:list={["nav-link", { active: isActive(item.href) }]}
+            aria-current={isActive(item.href) ? "page" : undefined}
+          >
             {item.label}
           </a>
         </li>
@@ -18,3 +38,99 @@ import { SITE, NAV } from "../index.js"
     </ul>
   </nav>
 </header>
+
+<style>
+  .nav-link {
+    color: var(--sc-ink-muted, #6b6b6b);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .nav-link:hover {
+    color: var(--sc-ink, #1a1a1a);
+  }
+  .nav-link.active {
+    color: var(--sc-ink, #1a1a1a);
+  }
+  .nav-link.active::after {
+    content: "";
+    display: block;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--sc-accent, #c45f34);
+    margin-top: 2px;
+  }
+
+  .nav-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    border: none;
+    background: none;
+    padding: 6px;
+    cursor: pointer;
+  }
+  .nav-toggle span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--sc-ink, #1a1a1a);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  .nav-toggle[aria-expanded="true"] span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .nav-toggle[aria-expanded="true"] span:nth-child(2) {
+    opacity: 0;
+  }
+  .nav-toggle[aria-expanded="true"] span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  @media (max-width: 640px) {
+    .nav-toggle {
+      display: flex;
+      padding: 4px;
+      margin-right: -4px;
+    }
+    #nav-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      display: none;
+      margin: 0;
+      padding: 0.5rem 1.5rem 1rem;
+      background: var(--sc-paper, #faf8f3);
+      border-bottom: 1px solid rgb(0 0 0 / 0.06);
+      box-shadow: 0 12px 24px -12px rgb(0 0 0 / 0.12);
+    }
+    #nav-list.open {
+      display: flex;
+    }
+    #nav-list li {
+      border-bottom: 1px solid rgb(0 0 0 / 0.05);
+    }
+    #nav-list li:last-child {
+      border-bottom: none;
+    }
+    #nav-list .nav-link {
+      display: block;
+      padding: 0.9rem 0;
+      font-size: 1rem;
+    }
+  }
+</style>
+
+<script>
+  const toggle = document.getElementById("nav-toggle")
+  const list = document.getElementById("nav-list")
+  toggle?.addEventListener("click", () => {
+    const open = toggle.getAttribute("aria-expanded") === "true"
+    toggle.setAttribute("aria-expanded", String(!open))
+    list?.classList.toggle("open", !open)
+  })
+</script>

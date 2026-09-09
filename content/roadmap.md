@@ -34,13 +34,13 @@ and one all-three experience so the lab covers the full taxonomy.
 
 | Character | Primitive(s) | Solari foundation | Status |
 |---|---|---|---|
-| Blindspot — The Investigator | Sandbox + Browser | `sandbox-quickstart-ts`, `browser-stealth-proxy-ts` | Live |
-| Stealth Scraper — The Witness | Browser | `browser-stealth-proxy-ts` | **In build** (`apps/witness`) |
+| Blindspot | Sandbox + Browser | `sandbox-quickstart-ts`, `browser-stealth-proxy-ts` | Live |
+| The Witness | Browser | `browser-stealth-proxy-ts` | **In build** (`apps/witness`) |
 | Code Interpreter — The Analyst | Sandbox | `sandbox-code-interpreter-py` | Cooking |
 | Desktop Operator — The Controller | Desktop | `desktop-computer-use-py` | Planned |
 | Browser Profiles — The Chameleon | Browser | `browser-profiles-ts` | Planned |
 | Session Recording — The Archivist | Browser | `browser-session-recording-py` | Planned |
-| Sandbox Preview — The Builder | Sandbox | `sandbox-port-preview-ts`, `sandbox-quickstart-ts` | **In build** (`apps/builder`) |
+| The Builder | Sandbox | `sandbox-port-preview-ts`, `sandbox-quickstart-ts` | **In build** (`apps/builder`) |
 
 ## Progress log
 

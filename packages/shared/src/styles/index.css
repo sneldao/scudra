@@ -17,4 +17,19 @@
 
   --sc-radius: 8px;
   --sc-max-width: 1120px;
+
+  /* Un-prefixed aliases — the canonical palette under short names, so any
+     surface (e.g. the experience apps' inline CSS) can use one source of
+     truth without importing Tailwind. */
+  --paper: var(--sc-paper);
+  --paper-warm: var(--sc-paper-warm);
+  --ink: var(--sc-ink);
+  --ink-muted: var(--sc-ink-muted);
+  --ink-dim: var(--sc-ink-dim);
+  --accent: var(--sc-accent);
+  --accent-soft: var(--sc-accent-soft);
+  --line: #e3ddd0;
+  --risk-low: var(--sc-risk-low);
+  --risk-moderate: var(--sc-risk-moderate);
+  --risk-high: var(--sc-risk-high);
 }

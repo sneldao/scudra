@@ -261,3 +261,45 @@ page with a working nav. Fix: gate the initial hidden state behind a
   Builder countdown.
 - Extract shared UI primitives into `packages/shared`.
 - Self-host fonts on the site; cap Blindspot texture budget on low-end.
+
+---
+
+## 10. Implementation status (2026-09)
+
+Implemented on branch `cline/vbmd5xy7`:
+
+**P0 — done**
+- CTA routing: added `EXPERIENCE_URLS` in `packages/shared` (env-driven via
+  `PUBLIC_BLINDSPOT_URL` / `PUBLIC_WITNESS_URL` / `PUBLIC_BUILDER_URL`, with
+  sensible fallbacks). Wired homepage, experiences index, recipe pages, and the
+  Blindspot article's primary CTA to route into the live interactive
+  experiences when deployed.
+- Canonical naming: Blindspot / The Witness / The Builder applied across site
+  pages, `recipes.ts`, README, recipe markdown H1s, roadmap, and app READMEs.
+- Signature line unified to "you were never there" (Blindspot cover + verdict).
+- No-JS reveal fix: `html.no-js` → inline script flips to `js`; reveals only
+  hide under `.js [data-reveal]`. Removed dead `.reveal` system.
+
+**P1 — done**
+- Outcome-first copy on homepage, experiences index, Blindspot article, and
+  Witness/Builder ledes; humanized Blindspot loading beats; plainer Witness
+  ticker + verdict summary; consistent CTA verbs.
+- Token unification: shared palette now exposes short-name aliases
+  (`--paper`, `--ink`, `--accent`, `--line`, …); Witness/Builder `:root`
+  aligned to the canonical hex values.
+- Mobile nav with hamburger + active-link states (plain CSS, token-driven).
+- Removed dead `.reveal` CSS.
+
+**P2 — done (light)**
+- ScrollProvider: fire-once reveals + sibling stagger.
+- Builder: live preview countdown ("Dies in Ns"), styled build beats + tombstone
+  finale entrance. Witness: stamp slam + teardown entrance.
+
+**Deferred (need `pnpm install` / deployment)**
+- Self-host fonts on the site (site still loads Google Fonts; experience apps
+  already self-host via `@fontsource`).
+- Extract shared UI primitives into `packages/shared` (Witness/Builder still
+  keep inline styles).
+- Cap Blindspot's texture budget on low-end (documented in DESIGN.md).
+- Set the actual `PUBLIC_*` experience URLs once the apps are deployed.
+

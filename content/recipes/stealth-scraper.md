@@ -1,4 +1,4 @@
-# Stealth Scraper — The Witness
+# The Witness
 
 Collect evidence from the web without leaving fingerprints.
 

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 import type { Blueprint } from "../lib/types.js"
 
 type Phase = "idle" | "building" | "live" | "teardown" | "gone"
@@ -119,6 +119,37 @@ const STYLES = `
     background: var(--accent); color: #fff; font: inherit; font-weight: 500; cursor: pointer;
   }
   .builder-form button:disabled { opacity: 0.6; cursor: wait; }
+
+  .examples { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .examples button {
+    font: inherit; font-size: 0.8rem; padding: 0.35rem 0.85rem; border-radius: 999px;
+    border: 1px solid var(--line); background: transparent; color: var(--ink-muted); cursor: pointer;
+  }
+  .examples button:hover { color: var(--ink); border-color: var(--ink-muted); }
+
+  .blueprint-card, .preview-card {
+    border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem;
+    background: var(--paper-warm); margin: 1rem 0; animation: brise 0.5s ease;
+  }
+  .blueprint-card h2 { margin: 0 0 0.35rem; font-size: 1.1rem; }
+  .blueprint-card p, .preview-card p { margin: 0; font-size: 0.9rem; }
+  .preview-card a { color: var(--accent); }
+
+  .teardown { color: var(--ink-muted); font-style: italic; margin-top: 1rem; animation: brise 0.5s ease; }
+
+  .tombstone {
+    margin-top: 2rem; padding: 1.5rem; border: 2px solid var(--accent);
+    border-radius: 12px; background: var(--paper-warm);
+    animation: bslams 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .tombstone h2 { font-size: 1.6rem; margin: 0 0 0.5rem; }
+  .tombstone p { margin: 0; line-height: 1.6; color: var(--ink-muted); }
+  .tombstone em { color: var(--ink); font-style: normal; font-weight: 500; }
+
+  .builder-error { color: var(--accent); }
+
+  @keyframes brise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes bslams { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
 `
 
 function BuildForm(props: {
@@ -154,7 +185,7 @@ function BlueprintCard({ blueprint, bytes }: { blueprint: Blueprint; bytes: numb
     <div className="blueprint-card">
       <h2>{blueprint.title}</h2>
       <p>
-        {blueprint.kind} · {bytes.toLocaleString()} bytes · staged into a fresh VM
+        {blueprint.kind} · {bytes.toLocaleString()} bytes · staged into a fresh sandbox
       </p>
     </div>
   )
@@ -162,6 +193,16 @@ function BlueprintCard({ blueprint, bytes }: { blueprint: Blueprint; bytes: numb
 
 function PreviewCard({ url, phase }: { url: string; phase: Phase }) {
   const dead = phase === "teardown" || phase === "gone"
+  // The orchestrator holds the sandbox live for ~60s before teardown; show a
+  // visible countdown so the ephemerality is legible (see DESIGN.md).
+  const [secondsLeft, setSecondsLeft] = useState(60)
+  useEffect(() => {
+    if (phase !== "live") return
+    setSecondsLeft(60)
+    const id = setInterval(() => setSecondsLeft((s) => Math.max(0, s - 1)), 1000)
+    return () => clearInterval(id)
+  }, [phase])
+
   return (
     <div className="preview-card">
       {dead ? (
@@ -178,7 +219,7 @@ function PreviewCard({ url, phase }: { url: string; phase: Phase }) {
           </a>
           <br />
           <span style={{ color: "var(--ink-muted)", fontSize: "0.85rem" }}>
-            It will be destroyed shortly. Go click things.
+            Dies in {secondsLeft}s — go click things.
           </span>
         </p>
       )}

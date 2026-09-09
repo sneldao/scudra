@@ -12,10 +12,10 @@ export interface Recipe {
 export const recipes: Recipe[] = [
   {
     slug: "blindspot",
-    title: "Blindspot — The Investigator",
+    title: "Blindspot",
     tagline: "Privacy-preserving onchain investigation.",
     description:
-      "Resolve an ENS name, run Mobula inside an ephemeral sandbox, enrich off-chain context through a stealth browser, and deliver a verdict. The investigator's identity, traffic, and history are protected.",
+      "Look up an ENS name and watch an agent quietly investigate it — resolving the wallet, checking onchain holdings, and digging up off-chain context — then hand you a verdict. It does all of it from a disposable cloud machine that vanishes when you're done.",
     primitives: ["browser", "sandbox"],
     status: "live",
     source: "apps/blindspot",
@@ -23,10 +23,10 @@ export const recipes: Recipe[] = [
   },
   {
     slug: "stealth-scraper",
-    title: "Stealth Scraper — The Witness",
-    tagline: "Collect evidence from the web without leaving fingerprints.",
+    title: "The Witness",
+    tagline: "The same URL, seen from three countries at once.",
     description:
-      "Use a cloud browser with a residential proxy to scrape pages from different egress points. Capture screenshots and structured data without revealing the operator.",
+      "Enter a URL and watch three stealth browsers visit it from different countries through residential IPs. Compare what each location sees — prices, currency, content — and collect evidence without leaving fingerprints.",
     primitives: ["browser"],
     status: "cooking",
     source: "apps/witness",
@@ -73,10 +73,10 @@ export const recipes: Recipe[] = [
   },
   {
     slug: "the-builder",
-    title: "Sandbox Preview — The Builder",
+    title: "The Builder",
     tagline: "Prompt. Boot. Build. Vanish.",
     description:
-      "An agent writes an application and boots it inside a sandbox with a live preview URL. Interact with software born on stage, then watch the sandbox — and the software — be destroyed.",
+      "Describe a small app and watch an agent plan it, write it, and boot it in a disposable sandbox — then hand you a live URL that dies with the machine that hosted it.",
     primitives: ["sandbox"],
     status: "cooking",
     source: "apps/builder",

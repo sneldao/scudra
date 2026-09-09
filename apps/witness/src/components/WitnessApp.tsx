@@ -101,8 +101,8 @@ export default function WitnessApp() {
       )}
       {state.phase === "running" && (
         <p className="witness-ticker" aria-live="polite">
-          Witnessing <code>{state.url}</code> from {state.locations.length || "three"} locations — every browser
-          ephemeral, every egress residential.
+          Witnessing <code>{state.url}</code> from {state.locations.length || "three"} locations — every
+          browser through a residential IP, nothing kept.
         </p>
       )}
       {state.error && (
@@ -172,6 +172,7 @@ const STYLES = `
   .witness-stamp {
     display: inline-block; padding: 0.2rem 0.6rem; border-radius: 6px;
     font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500;
+    animation: wstamp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
   .witness-stamp.ok { background: #3e8e5a22; color: #2d6b44; }
   .witness-stamp.failed { background: #c26b3f22; color: #a5542e; }
@@ -187,9 +188,15 @@ const STYLES = `
   .witness-verdict li:last-child { border-bottom: none; }
   .witness-teardown {
     margin-top: 1.25rem; font-size: 0.85rem; color: var(--ink-muted); font-style: italic;
+    animation: wfade 0.8s ease 0.15s both;
   }
   .witness-error { color: var(--accent); }
   code { font-family: "JetBrains Mono", monospace; font-size: 0.8em; }
+
+  @keyframes wstamp {
+    from { opacity: 0; transform: scale(1.35); }
+    to { opacity: 1; transform: scale(1); }
+  }
 `
 
 function WitnessForm(props: {
@@ -311,9 +318,8 @@ function WitnessVerdict({ state }: { state: State }) {
       <p className="verdict-summary">
         {okCount} of {state.locations.length} locations saw the page
         {diffCount > 0
-          ? ` · ${diffCount} difference${diffCount === 1 ? "" : "s"} between them`
-          : " · no differences detected"}
-        .
+          ? `, with ${diffCount} difference${diffCount === 1 ? "" : "s"} between them.`
+          : " — and no differences between them."}
       </p>
       {diffCount > 0 ? (
         <ul>
