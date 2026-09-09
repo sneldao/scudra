@@ -632,6 +632,11 @@ builds. Three.js is imported as a module: `import * as THREE from 'three'`.
 - **Frame rate**: target 60fps. The scene is simple — no particles, no
   post-processing. If frame drops occur, reduce shadow map to 1024×1024 and
   disable shadows on sub-planes.
+- **Low-end autoscaling**: `quality.ts` detects coarse-pointer, low-core/low
+  memory devices once per load and caps the render pixel ratio (1.5), the VSM
+  shadow map (1024×1024), and the panel texture scale (1×) — cutting the
+  worst-case texture budget roughly in half on constrained hardware without
+  any manual tuning.
 - **Texture disposal**: on "new investigation", all textures and geometries
   are disposed via `texture.dispose()` and `geometry.dispose()` to prevent
   GPU memory leaks across multiple investigations.

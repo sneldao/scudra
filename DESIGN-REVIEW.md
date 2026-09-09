@@ -295,11 +295,19 @@ Implemented on branch `cline/vbmd5xy7`:
 - Builder: live preview countdown ("Dies in Ns"), styled build beats + tombstone
   finale entrance. Witness: stamp slam + teardown entrance.
 
-**Deferred (need `pnpm install` / deployment)**
-- Self-host fonts on the site (site still loads Google Fonts; experience apps
-  already self-host via `@fontsource`).
-- Extract shared UI primitives into `packages/shared` (Witness/Builder still
-  keep inline styles).
-- Cap Blindspot's texture budget on low-end (documented in DESIGN.md).
-- Set the actual `PUBLIC_*` experience URLs once the apps are deployed.
+**Deferred items — now done (follow-up pass)**
+- Self-host fonts on the site (`@fontsource` added to `apps/site`; Google Fonts
+  links removed from `Layout.astro`). Deps added, verified by `pnpm typecheck`.
+- Extract shared UI primitives into `packages/shared`: new
+  `packages/shared/src/styles/experience.css` with `.sc-*` primitives
+  (form, chips, card, stamp, ticker, teardown, tombstone, error + keyframes);
+  Witness and Builder now consume them, trimming their inline STYLES to
+  app-specific rules only. Both apps depend on `@scudra/shared` (workspace:*).
+- Cap Blindspot's texture budget on low-end: new `apps/blindspot/src/client/
+  quality.ts` auto-detects low-end devices and caps render pixel ratio, VSM
+  shadow map, blur samples, and panel texture scale (DESIGN.md updated).
+- `PUBLIC_*` experience URLs: mechanism is fully wired (`EXPERIENCE_URLS` in
+  `packages/shared`) and documented in `apps/site/.env.example` + README. The
+  actual values still need to be set once the apps are deployed (cannot be
+  known until then).
 

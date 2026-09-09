@@ -51,6 +51,22 @@ pnpm dev:blindspot
 # Or the Witness geo-diff experience
 pnpm dev:witness
 ```
+## Wiring the live experiences into the site
+
+The interactive experiences (`apps/blindspot`, `apps/witness`, `apps/builder`)
+are separate apps from the marketing site. When you deploy them, point the
+site's CTAs at their public URLs via the site's `PUBLIC_*` env vars (see
+`apps/site/.env.example`):
+
+| Variable | Experience |
+|---|---|
+| `PUBLIC_BLINDSPOT_URL` | The 3D dossier |
+| `PUBLIC_WITNESS_URL` | The geo-diff witness |
+| `PUBLIC_BUILDER_URL` | The builder |
+
+Until set, the CTAs fall back to the static pages on the site, so nothing
+breaks without deployments. These are read by `EXPERIENCE_URLS` in
+`packages/shared`.
 
 ## Development
 

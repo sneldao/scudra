@@ -1,0 +1,157 @@
+/* Scudra shared experience primitives.
+ *
+ * Reusable building blocks for the interactive experience apps (Witness,
+ * Builder, and future characters). Consumed via the token vars in index.css
+ * (both --sc-* and the short aliases like --paper, --accent, --line).
+ *
+ * Apps compose these with a thin layer of app-specific styles rather than
+ * re-authoring the same form/card/stamp/tombstone CSS each time.
+ */
+
+/* ── Form row (input + primary action) ─────────────────────────────────── */
+.sc-form {
+  display: flex;
+  gap: 0.75rem;
+  margin: 2rem 0 1rem;
+}
+.sc-form input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--line, #e3ddd0);
+  border-radius: 8px;
+  background: var(--paper-warm, #f5f1e8);
+  color: var(--ink, #1a1a1a);
+  font: inherit;
+}
+.sc-form button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent, #c45f34);
+  color: #fff;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+.sc-form button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* ── Example chips ─────────────────────────────────────────────────────── */
+.sc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+.sc-chips-label {
+  font-size: 0.8rem;
+  color: var(--ink-muted, #6b6b6b);
+}
+.sc-chips button {
+  font: inherit;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--line, #e3ddd0);
+  background: transparent;
+  color: var(--ink-muted, #6b6b6b);
+  cursor: pointer;
+}
+.sc-chips button:hover {
+  color: var(--ink, #1a1a1a);
+  border-color: var(--ink-muted, #6b6b6b);
+}
+
+/* ── Card ──────────────────────────────────────────────────────────────── */
+.sc-card {
+  border: 1px solid var(--line, #e3ddd0);
+  border-radius: 12px;
+  padding: 1.25rem;
+  background: var(--paper-warm, #f5f1e8);
+  margin: 1rem 0;
+  animation: sc-rise 0.5s ease;
+}
+
+/* ── Status stamp ──────────────────────────────────────────────────────── */
+.sc-stamp {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+  animation: sc-slam 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.sc-stamp.ok {
+  background: #3e8e5a22;
+  color: #2d6b44;
+}
+.sc-stamp.failed {
+  background: #c26b3f22;
+  color: #a5542e;
+}
+
+/* ── Ticker / status line ──────────────────────────────────────────────── */
+.sc-ticker {
+  color: var(--ink-muted, #6b6b6b);
+  font-size: 0.9rem;
+  margin: 0 0 1.5rem;
+  animation: sc-fade 0.4s ease;
+}
+
+/* ── Finale: teardown line + tombstone ─────────────────────────────────── */
+.sc-teardown {
+  color: var(--ink-muted, #6b6b6b);
+  font-style: italic;
+  margin-top: 1.25rem;
+  animation: sc-fade 0.8s ease 0.15s both;
+}
+.sc-tombstone {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border: 2px solid var(--accent, #c45f34);
+  border-radius: 12px;
+  background: var(--paper-warm, #f5f1e8);
+  animation: sc-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sc-tombstone h2 {
+  font-size: 1.6rem;
+  margin: 0 0 0.5rem;
+}
+.sc-tombstone p {
+  margin: 0;
+  line-height: 1.6;
+  color: var(--ink-muted, #6b6b6b);
+}
+.sc-tombstone em {
+  color: var(--ink, #1a1a1a);
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* ── Error ─────────────────────────────────────────────────────────────── */
+.sc-error {
+  color: var(--accent, #c45f34);
+}
+
+/* ── Shared keyframes ──────────────────────────────────────────────────── */
+@keyframes sc-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes sc-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes sc-slam {
+  from { opacity: 0; transform: scale(1.35); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes sc-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}

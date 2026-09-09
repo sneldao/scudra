@@ -86,7 +86,7 @@ export default function BuilderApp() {
     <section>
       <BuildForm prompt={prompt} setPrompt={setPrompt} onBuild={build} busy={state.phase !== "idle"} />
       {state.phase === "idle" && !state.error && (
-        <div className="examples">
+        <div className="sc-chips">
           {EXAMPLES.map((e) => (
             <button key={e} type="button" onClick={() => setPrompt(e)}>
               {e}
@@ -95,13 +95,13 @@ export default function BuilderApp() {
         </div>
       )}
       {state.error && (
-        <p role="alert" className="builder-error">
+        <p role="alert" className="sc-error">
           {state.error}
         </p>
       )}
       {state.blueprint && <BlueprintCard blueprint={state.blueprint} bytes={state.bytes} />}
       {state.previewUrl && <PreviewCard url={state.previewUrl} phase={state.phase} />}
-      {state.phase === "teardown" && <p className="teardown">Destroying the machine that hosted it…</p>}
+      {state.phase === "teardown" && <p className="sc-teardown">Destroying the machine that hosted it…</p>}
       {state.phase === "gone" && <Tombstone />}
       <style>{STYLES}</style>
     </section>
@@ -109,47 +109,9 @@ export default function BuilderApp() {
 }
 
 const STYLES = `
-  .builder-form { display: flex; gap: 0.75rem; margin: 2rem 0 1rem; }
-  .builder-form input {
-    flex: 1; padding: 0.75rem 1rem; border: 1px solid var(--line);
-    border-radius: 8px; background: var(--paper-warm); color: var(--ink); font: inherit;
-  }
-  .builder-form button {
-    padding: 0.75rem 1.5rem; border: none; border-radius: 8px;
-    background: var(--accent); color: #fff; font: inherit; font-weight: 500; cursor: pointer;
-  }
-  .builder-form button:disabled { opacity: 0.6; cursor: wait; }
-
-  .examples { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
-  .examples button {
-    font: inherit; font-size: 0.8rem; padding: 0.35rem 0.85rem; border-radius: 999px;
-    border: 1px solid var(--line); background: transparent; color: var(--ink-muted); cursor: pointer;
-  }
-  .examples button:hover { color: var(--ink); border-color: var(--ink-muted); }
-
-  .blueprint-card, .preview-card {
-    border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem;
-    background: var(--paper-warm); margin: 1rem 0; animation: brise 0.5s ease;
-  }
   .blueprint-card h2 { margin: 0 0 0.35rem; font-size: 1.1rem; }
   .blueprint-card p, .preview-card p { margin: 0; font-size: 0.9rem; }
   .preview-card a { color: var(--accent); }
-
-  .teardown { color: var(--ink-muted); font-style: italic; margin-top: 1rem; animation: brise 0.5s ease; }
-
-  .tombstone {
-    margin-top: 2rem; padding: 1.5rem; border: 2px solid var(--accent);
-    border-radius: 12px; background: var(--paper-warm);
-    animation: bslams 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  .tombstone h2 { font-size: 1.6rem; margin: 0 0 0.5rem; }
-  .tombstone p { margin: 0; line-height: 1.6; color: var(--ink-muted); }
-  .tombstone em { color: var(--ink); font-style: normal; font-weight: 500; }
-
-  .builder-error { color: var(--accent); }
-
-  @keyframes brise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-  @keyframes bslams { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
 `
 
 function BuildForm(props: {
@@ -160,7 +122,7 @@ function BuildForm(props: {
 }) {
   return (
     <form
-      className="builder-form"
+      className="sc-form"
       onSubmit={(e) => {
         e.preventDefault()
         props.onBuild()
@@ -182,7 +144,7 @@ function BuildForm(props: {
 
 function BlueprintCard({ blueprint, bytes }: { blueprint: Blueprint; bytes: number }) {
   return (
-    <div className="blueprint-card">
+    <div className="sc-card blueprint-card">
       <h2>{blueprint.title}</h2>
       <p>
         {blueprint.kind} · {bytes.toLocaleString()} bytes · staged into a fresh sandbox
@@ -204,12 +166,12 @@ function PreviewCard({ url, phase }: { url: string; phase: Phase }) {
   }, [phase])
 
   return (
-    <div className="preview-card">
+    <div className="sc-card preview-card">
       {dead ? (
         <p>
           <code>{url}</code>
           <br />
-          <span className="builder-error">This URL is a tombstone now.</span>
+          <span className="sc-error">This URL is a tombstone now.</span>
         </p>
       ) : (
         <p>
@@ -229,7 +191,7 @@ function PreviewCard({ url, phase }: { url: string; phase: Phase }) {
 
 function Tombstone() {
   return (
-    <div className="tombstone" aria-live="polite">
+    <div className="sc-tombstone" aria-live="polite">
       <h2>Gone.</h2>
       <p>
         The sandbox is destroyed. The preview URL now leads nowhere — try it.

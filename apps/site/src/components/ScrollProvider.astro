@@ -23,7 +23,7 @@
 
   if (!prefersReducedMotion) {
     const reveals = document.querySelectorAll("[data-reveal]")
-    reveals.forEach((el, index) => {
+    reveals.forEach((el) => {
       // Stagger siblings (e.g. grid cards) slightly so reveals feel choreographed
       // rather than uniform; capped so long lists don't drag.
       const siblings = Array.from(el.parentElement?.querySelectorAll("[data-reveal]") ?? [])

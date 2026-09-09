@@ -8,6 +8,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./styles": "./src/styles/index.css",
+    "./styles/index.css": "./src/styles/index.css",
+    "./styles/experience.css": "./src/styles/experience.css",
     "./components/*": "./src/components/*.astro"
   },
   "scripts": {
