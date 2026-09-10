@@ -5,6 +5,7 @@
 
 import * as THREE from "three"
 import { TOKENS } from "./tokens.js"
+import { getQuality } from "./quality.js"
 
 export interface SceneContext {
   renderer: THREE.WebGLRenderer
@@ -16,12 +17,14 @@ export interface SceneContext {
 }
 
 export function createScene(canvas: HTMLCanvasElement): SceneContext {
+  const q = getQuality()
+
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,
     alpha: false,
   })
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, q.pixelRatioCap))
   renderer.setSize(window.innerWidth, window.innerHeight)
   renderer.shadowMap.enabled = true
   // VSM blurs the shadow-catcher contact shadows; PCF edges read as hard
@@ -50,8 +53,8 @@ export function createScene(canvas: HTMLCanvasElement): SceneContext {
   const directional = new THREE.DirectionalLight(0xffffff, 1.2)
   directional.position.set(-5, 8, 5)
   directional.castShadow = true
-  directional.shadow.mapSize.width = 2048
-  directional.shadow.mapSize.height = 2048
+  directional.shadow.mapSize.width = q.shadowMapSize
+  directional.shadow.mapSize.height = q.shadowMapSize
   directional.shadow.camera.near = 0.5
   directional.shadow.camera.far = 60
   directional.shadow.camera.left = -12
@@ -60,7 +63,7 @@ export function createScene(canvas: HTMLCanvasElement): SceneContext {
   directional.shadow.camera.bottom = -12
   directional.shadow.bias = -0.0005
   directional.shadow.radius = 12
-  directional.shadow.blurSamples = 16
+  directional.shadow.blurSamples = q.shadowBlurSamples
   scene.add(directional)
 
   // Accent point light — terracotta tint, follows camera for warmth

@@ -1,5 +1,11 @@
 ---
 import Layout from "../../layouts/Layout.astro"
+import { EXPERIENCE_URLS } from "@scudra/shared"
+
+// When a live interactive deployment is configured, the primary CTA leads
+// straight into the 3D dossier. Otherwise we fall back to "run it locally".
+const liveUrl = EXPERIENCE_URLS.blindspot
+const hasLive = liveUrl !== "/experiences/blindspot"
 ---
 
 <Layout
@@ -15,16 +21,24 @@ import Layout from "../../layouts/Layout.astro"
       Blindspot
     </h1>
     <p class="text-lg text-ink-muted leading-relaxed mb-8">
-      A privacy-preserving onchain investigation agent. Resolve an ENS name, run Mobula inside an ephemeral sandbox, enrich off-chain context through a stealth browser, and receive a verdict.
+      A privacy-preserving onchain investigation agent. Look up an ENS name and watch an agent quietly
+      investigate it — resolving the wallet, checking onchain holdings, and digging up off-chain context —
+      then hand you a verdict. It does all of it from a disposable cloud machine that vanishes when you're done.
     </p>
 
     <div class="flex flex-wrap gap-3 mb-12">
-      <a
-        href="https://github.com/scudra/scudra/tree/main/apps/blindspot"
-        class="sc-button-primary"
-      >
-        Run it locally
-      </a>
+      {hasLive ? (
+        <a href={liveUrl} class="sc-button-accent">
+          Open the live dossier
+        </a>
+      ) : (
+        <a
+          href="https://github.com/scudra/scudra/tree/main/apps/blindspot"
+          class="sc-button-primary"
+        >
+          Run it locally
+        </a>
+      )}
       <a
         href="/recipes/blindspot"
         class="sc-button-secondary"

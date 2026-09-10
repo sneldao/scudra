@@ -1,4 +1,4 @@
-# Blindspot — The Investigator
+# Blindspot
 
 A privacy-preserving onchain investigation agent.
 

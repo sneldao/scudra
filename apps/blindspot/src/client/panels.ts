@@ -90,7 +90,7 @@ function searchPanelHTML(): string {
     <h1 class="serif" style="font-size: 56px; margin-bottom: 14px;">Blindspot</h1>
     <p class="muted" style="font-size: 17px;">Privacy-preserving onchain investigation</p>
     <div style="height: 24px;"></div>
-    <p class="dim" style="margin-top: auto; font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em;">Ephemeral sandbox · no trace · you were never here</p>
+    <p class="dim" style="margin-top: auto; font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em;">Ephemeral sandbox · no trace · you were never there</p>
   </div>`
 }
 

@@ -2,6 +2,7 @@
 import { readFileSync } from "node:fs"
 import { marked } from "marked"
 import Layout from "../../layouts/Layout.astro"
+import { EXPERIENCE_URLS } from "@scudra/shared"
 import { recipes, getRecipe } from "../../data/recipes.ts"
 
 export function getStaticPaths() {
@@ -61,7 +62,16 @@ const primitiveLabel: Record<string, string> = {
 
     <div class="flex flex-wrap gap-3 mb-12">
       {recipe.status === "live" && recipe.demo && (
-        <a href={recipe.demo} class="sc-button-accent">Try the experience</a>
+        <a
+          href={
+            recipe.slug in EXPERIENCE_URLS
+              ? EXPERIENCE_URLS[recipe.slug as keyof typeof EXPERIENCE_URLS]
+              : recipe.demo
+          }
+          class="sc-button-accent"
+        >
+          Try the experience
+        </a>
       )}
       {recipe.source && (
         <a href={`https://github.com/scudra/scudra/tree/main/${recipe.source}`} class="sc-button-secondary">View source</a>

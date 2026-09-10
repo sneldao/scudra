@@ -90,8 +90,8 @@ export default function WitnessApp() {
     <section>
       <WitnessForm input={input} setInput={setInput} onObserve={observe} busy={state.phase === "running"} />
       {state.phase === "idle" && !state.error && (
-        <div className="witness-examples">
-          <span className="examples-label">Try:</span>
+        <div className="sc-chips">
+          <span className="sc-chips-label">Try:</span>
           {EXAMPLES.map((e) => (
             <button key={e} type="button" onClick={() => setInput(e)}>
               {new URL(e).hostname.replace("www.", "")}
@@ -100,13 +100,13 @@ export default function WitnessApp() {
         </div>
       )}
       {state.phase === "running" && (
-        <p className="witness-ticker" aria-live="polite">
-          Witnessing <code>{state.url}</code> from {state.locations.length || "three"} locations — every browser
-          ephemeral, every egress residential.
+        <p className="sc-ticker witness-ticker" aria-live="polite">
+          Witnessing <code>{state.url}</code> from {state.locations.length || "three"} locations — every
+          browser through a residential IP, nothing kept.
         </p>
       )}
       {state.error && (
-        <p role="alert" className="witness-error">
+        <p role="alert" className="sc-error">
           {state.error}
         </p>
       )}
@@ -118,35 +118,15 @@ export default function WitnessApp() {
 }
 
 const STYLES = `
-  .witness-form { display: flex; gap: 0.75rem; margin: 2rem 0 1rem; }
-  .witness-form input {
-    flex: 1; padding: 0.75rem 1rem; border: 1px solid var(--line);
-    border-radius: 8px; background: var(--paper-warm); color: var(--ink); font: inherit;
-  }
-  .witness-form button {
-    padding: 0.75rem 1.5rem; border: none; border-radius: 8px;
-    background: var(--accent); color: #fff; font: inherit; font-weight: 500; cursor: pointer;
-  }
-  .witness-form button:disabled { opacity: 0.6; cursor: wait; }
-  .witness-examples { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; }
-  .examples-label { font-size: 0.8rem; color: var(--ink-muted); }
-  .witness-examples button {
-    font: inherit; font-size: 0.8rem; padding: 0.35rem 0.85rem; border-radius: 999px;
-    border: 1px solid var(--line); background: transparent; color: var(--ink-muted); cursor: pointer;
-  }
-  .witness-examples button:hover { color: var(--ink); border-color: var(--ink-muted); }
   .witness-ticker {
-    color: var(--ink-muted); font-size: 0.9rem; margin: 0 0 1.5rem;
-    animation: wfade 0.4s ease;
+    animation: sc-fade 0.4s ease;
   }
-  @keyframes wfade { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes wpulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
   .witness-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem;
   }
   .witness-card {
     border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem;
-    background: var(--paper-warm); animation: wfade 0.5s ease;
+    background: var(--paper-warm); animation: sc-fade 0.5s ease;
   }
   .witness-card.ok { border-color: #3e8e5a66; }
   .witness-card.failed { border-color: #c26b3f88; }
@@ -167,15 +147,9 @@ const STYLES = `
   }
   .witness-beat::before {
     content: ""; width: 0.5rem; height: 0.5rem; border-radius: 50%;
-    background: var(--accent); animation: wpulse 1.2s ease infinite;
+    background: var(--accent); animation: sc-pulse 1.2s ease infinite;
   }
-  .witness-stamp {
-    display: inline-block; padding: 0.2rem 0.6rem; border-radius: 6px;
-    font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500;
-  }
-  .witness-stamp.ok { background: #3e8e5a22; color: #2d6b44; }
-  .witness-stamp.failed { background: #c26b3f22; color: #a5542e; }
-  .witness-verdict { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 2px solid var(--line); animation: wfade 0.6s ease; }
+  .witness-verdict { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 2px solid var(--line); animation: sc-fade 0.6s ease; }
   .witness-verdict h2 { font-size: 1.6rem; margin: 0 0 0.75rem; }
   .witness-verdict h2.split { color: var(--accent); }
   .witness-verdict .verdict-summary { color: var(--ink-muted); margin: 0 0 1rem; }
@@ -185,10 +159,6 @@ const STYLES = `
     border-bottom: 1px solid var(--line); line-height: 1.6; font-size: 0.92rem;
   }
   .witness-verdict li:last-child { border-bottom: none; }
-  .witness-teardown {
-    margin-top: 1.25rem; font-size: 0.85rem; color: var(--ink-muted); font-style: italic;
-  }
-  .witness-error { color: var(--accent); }
   code { font-family: "JetBrains Mono", monospace; font-size: 0.8em; }
 `
 
@@ -200,7 +170,7 @@ function WitnessForm(props: {
 }) {
   return (
     <form
-      className="witness-form"
+      className="sc-form"
       onSubmit={(e) => {
         e.preventDefault()
         props.onObserve()
@@ -263,14 +233,14 @@ function WitnessGrid({ state }: { state: State }) {
                       {(obs.durationMs / 1000).toFixed(1)}s
                     </p>
                     <p>
-                      <span className={`witness-stamp ok`}>seen</span>
+                      <span className={`sc-stamp ok`}>seen</span>
                     </p>
                   </>
                 ) : obs ? (
                   <>
-                    <p className="witness-error">{obs.error ?? "Failed."}</p>
+                    <p className="sc-error">{obs.error ?? "Failed."}</p>
                     <p>
-                      <span className={`witness-stamp failed`}>unseen</span>
+                      <span className={`sc-stamp failed`}>unseen</span>
                     </p>
                   </>
                 ) : null}
@@ -311,15 +281,14 @@ function WitnessVerdict({ state }: { state: State }) {
       <p className="verdict-summary">
         {okCount} of {state.locations.length} locations saw the page
         {diffCount > 0
-          ? ` · ${diffCount} difference${diffCount === 1 ? "" : "s"} between them`
-          : " · no differences detected"}
-        .
+          ? `, with ${diffCount} difference${diffCount === 1 ? "" : "s"} between them.`
+          : " — and no differences between them."}
       </p>
       {diffCount > 0 ? (
         <ul>
           {state.differences.map((d, i) => (
             <li key={i}>
-              <span className={`witness-stamp ${d.kind === "availability" ? "failed" : "ok"}`}>{d.kind}</span>
+              <span className={`sc-stamp ${d.kind === "availability" ? "failed" : "ok"}`}>{d.kind}</span>
               {d.detail}
             </li>
           ))}
@@ -330,7 +299,7 @@ function WitnessVerdict({ state }: { state: State }) {
           IP. The page cannot tell them apart. That is the point.
         </p>
       )}
-      <p className="witness-teardown">
+      <p className="sc-teardown">
         Teardown complete: every browser closed, every proxy released, nothing kept. You were never there.
       </p>
     </div>

@@ -1,4 +1,4 @@
-# The Builder — Sandbox Preview Experience
+# The Builder
 
 Prompt. Boot. Build. Vanish.
 

@@ -3,6 +3,7 @@
 // Raycasting for hover highlight. Scroll-driven Y rotation.
 
 import * as THREE from "three"
+import { getQuality } from "./quality.js"
 
 export interface ChartSegment {
   label: string
@@ -27,9 +28,11 @@ export interface DonutChart {
 export function createDonutChart(opts: DonutChartOptions): DonutChart {
   const { segments, innerRadius = 1.2, outerRadius = 2.5, depth = 0.3, position = [0, 0, 0] } = opts
 
+  const quality = getQuality()
+
   const group = new THREE.Group()
   group.position.set(...position)
-  group.castShadow = true
+  group.castShadow = quality.castSubPlaneShadows
   group.receiveShadow = true
 
   const total = segments.reduce((sum, s) => sum + s.value, 0)
@@ -68,7 +71,7 @@ export function createDonutChart(opts: DonutChartOptions): DonutChart {
     })
 
     const mesh = new THREE.Mesh(geo, mat)
-    mesh.castShadow = true
+    mesh.castShadow = quality.castSubPlaneShadows
     mesh.receiveShadow = true
     mesh.userData = {
       label: seg.label,

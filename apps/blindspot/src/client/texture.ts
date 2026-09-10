@@ -10,6 +10,7 @@
 
 import * as THREE from "three"
 import { getEmbeddedFontCSS } from "./fonts.js"
+import { getQuality } from "./quality.js"
 
 // CSS pixels per world unit. A 6×4 panel becomes a 960×640 CSS box.
 export const PX_PER_UNIT = 160
@@ -22,7 +23,10 @@ export interface TextureOptions {
 
 export async function htmlToTexture(html: string, opts: TextureOptions): Promise<THREE.CanvasTexture> {
   const { worldWidth, worldHeight } = opts
-  const scale = opts.scale ?? Math.min(2, Math.max(1, window.devicePixelRatio || 1))
+  // A caller-passed scale wins; otherwise rasterise at the quality-driven
+  // scale (1× on low-end, device DPR on capable machines) so the texture
+  // budget stays bounded on constrained hardware.
+  const scale = opts.scale ?? getQuality().textureScale
 
   const cw = Math.round(worldWidth * PX_PER_UNIT)
   const ch = Math.round(worldHeight * PX_PER_UNIT)

@@ -1,4 +1,4 @@
-# The Witness — Stealth Scraper Experience
+# The Witness
 
 The same URL, seen from three countries at once.
 

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 import type { Blueprint } from "../lib/types.js"
 
 type Phase = "idle" | "building" | "live" | "teardown" | "gone"
@@ -86,7 +86,7 @@ export default function BuilderApp() {
     <section>
       <BuildForm prompt={prompt} setPrompt={setPrompt} onBuild={build} busy={state.phase !== "idle"} />
       {state.phase === "idle" && !state.error && (
-        <div className="examples">
+        <div className="sc-chips">
           {EXAMPLES.map((e) => (
             <button key={e} type="button" onClick={() => setPrompt(e)}>
               {e}
@@ -95,13 +95,13 @@ export default function BuilderApp() {
         </div>
       )}
       {state.error && (
-        <p role="alert" className="builder-error">
+        <p role="alert" className="sc-error">
           {state.error}
         </p>
       )}
       {state.blueprint && <BlueprintCard blueprint={state.blueprint} bytes={state.bytes} />}
       {state.previewUrl && <PreviewCard url={state.previewUrl} phase={state.phase} />}
-      {state.phase === "teardown" && <p className="teardown">Destroying the machine that hosted it…</p>}
+      {state.phase === "teardown" && <p className="sc-teardown">Destroying the machine that hosted it…</p>}
       {state.phase === "gone" && <Tombstone />}
       <style>{STYLES}</style>
     </section>
@@ -109,16 +109,9 @@ export default function BuilderApp() {
 }
 
 const STYLES = `
-  .builder-form { display: flex; gap: 0.75rem; margin: 2rem 0 1rem; }
-  .builder-form input {
-    flex: 1; padding: 0.75rem 1rem; border: 1px solid var(--line);
-    border-radius: 8px; background: var(--paper-warm); color: var(--ink); font: inherit;
-  }
-  .builder-form button {
-    padding: 0.75rem 1.5rem; border: none; border-radius: 8px;
-    background: var(--accent); color: #fff; font: inherit; font-weight: 500; cursor: pointer;
-  }
-  .builder-form button:disabled { opacity: 0.6; cursor: wait; }
+  .blueprint-card h2 { margin: 0 0 0.35rem; font-size: 1.1rem; }
+  .blueprint-card p, .preview-card p { margin: 0; font-size: 0.9rem; }
+  .preview-card a { color: var(--accent); }
 `
 
 function BuildForm(props: {
@@ -129,7 +122,7 @@ function BuildForm(props: {
 }) {
   return (
     <form
-      className="builder-form"
+      className="sc-form"
       onSubmit={(e) => {
         e.preventDefault()
         props.onBuild()
@@ -151,10 +144,10 @@ function BuildForm(props: {
 
 function BlueprintCard({ blueprint, bytes }: { blueprint: Blueprint; bytes: number }) {
   return (
-    <div className="blueprint-card">
+    <div className="sc-card blueprint-card">
       <h2>{blueprint.title}</h2>
       <p>
-        {blueprint.kind} · {bytes.toLocaleString()} bytes · staged into a fresh VM
+        {blueprint.kind} · {bytes.toLocaleString()} bytes · staged into a fresh sandbox
       </p>
     </div>
   )
@@ -162,13 +155,23 @@ function BlueprintCard({ blueprint, bytes }: { blueprint: Blueprint; bytes: numb
 
 function PreviewCard({ url, phase }: { url: string; phase: Phase }) {
   const dead = phase === "teardown" || phase === "gone"
+  // The orchestrator holds the sandbox live for ~60s before teardown; show a
+  // visible countdown so the ephemerality is legible (see DESIGN.md).
+  const [secondsLeft, setSecondsLeft] = useState(60)
+  useEffect(() => {
+    if (phase !== "live") return
+    setSecondsLeft(60)
+    const id = setInterval(() => setSecondsLeft((s) => Math.max(0, s - 1)), 1000)
+    return () => clearInterval(id)
+  }, [phase])
+
   return (
-    <div className="preview-card">
+    <div className="sc-card preview-card">
       {dead ? (
         <p>
           <code>{url}</code>
           <br />
-          <span className="builder-error">This URL is a tombstone now.</span>
+          <span className="sc-error">This URL is a tombstone now.</span>
         </p>
       ) : (
         <p>
@@ -178,7 +181,7 @@ function PreviewCard({ url, phase }: { url: string; phase: Phase }) {
           </a>
           <br />
           <span style={{ color: "var(--ink-muted)", fontSize: "0.85rem" }}>
-            It will be destroyed shortly. Go click things.
+            Dies in {secondsLeft}s — go click things.
           </span>
         </p>
       )}
@@ -188,7 +191,7 @@ function PreviewCard({ url, phase }: { url: string; phase: Phase }) {
 
 function Tombstone() {
   return (
-    <div className="tombstone" aria-live="polite">
+    <div className="sc-tombstone" aria-live="polite">
       <h2>Gone.</h2>
       <p>
         The sandbox is destroyed. The preview URL now leads nowhere — try it.

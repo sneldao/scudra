@@ -10,6 +10,9 @@
     "typecheck": "astro check"
   },
   "dependencies": {
+    "@fontsource/fraunces": "^5.3.0",
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
     "@scudra/shared": "workspace:*",
     "astro": "^7.2.10",
     "gsap": "^3.12.7",

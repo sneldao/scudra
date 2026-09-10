@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro"
+import { EXPERIENCE_URLS } from "@scudra/shared"
 ---
 
 <Layout title="Experiences — Scudra" description="Interactive cloud agent experiences built by Scudra.">
@@ -19,19 +20,33 @@ import Layout from "../../layouts/Layout.astro"
         <p class="text-[0.7rem] uppercase tracking-[0.08em] text-ink-muted mb-3">Live</p>
         <h2 class="font-serif text-2xl mb-2">Blindspot</h2>
         <p class="text-ink-muted leading-relaxed mb-6">
-          A privacy-preserving onchain investigation agent. Search an ENS name and watch the dossier declassify as the agent works.
+          Look up an ENS name and watch an agent quietly investigate it — resolving the wallet,
+          checking onchain holdings, and digging up off-chain context — then hand you a verdict.
         </p>
         <div class="flex flex-wrap gap-3">
-          <a href="/experiences/blindspot" class="sc-button-accent">Open dossier</a>
-          <a href="/recipes/blindspot" class="sc-button-secondary">Read recipe</a>
+          <a href={EXPERIENCE_URLS.blindspot} class="sc-button-accent">Open the dossier</a>
+          <a href="/recipes/blindspot" class="sc-button-secondary">Read the recipe</a>
         </div>
       </article>
 
       <article class="p-6 bg-paper-warm rounded-sc border border-black/5 opacity-65" data-reveal>
         <p class="text-[0.7rem] uppercase tracking-[0.08em] text-ink-muted mb-3">Coming soon</p>
-        <h2 class="font-serif text-2xl mb-2">Stealth Scraper</h2>
+        <h2 class="font-serif text-2xl mb-2">The Witness</h2>
         <p class="text-ink-muted leading-relaxed mb-6">
-          A distributed witness that captures web pages from multiple egress points and compares what each location sees.
+          The same URL, seen from three countries at once. Enter a link and watch what the world
+          actually sees — through residential IPs, from browsers that leave no trace of you.
+        </p>
+        <span class="inline-block sc-button-secondary opacity-75 cursor-default">
+          In the lab
+        </span>
+      </article>
+
+      <article class="p-6 bg-paper-warm rounded-sc border border-black/5 opacity-65" data-reveal>
+        <p class="text-[0.7rem] uppercase tracking-[0.08em] text-ink-muted mb-3">Coming soon</p>
+        <h2 class="font-serif text-2xl mb-2">The Builder</h2>
+        <p class="text-ink-muted leading-relaxed mb-6">
+          Describe a small app and watch an agent plan it, write it, and boot it in a disposable
+          sandbox — then hand you a live URL that dies with the machine that hosted it.
         </p>
         <span class="inline-block sc-button-secondary opacity-75 cursor-default">
           In the lab

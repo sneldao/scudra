@@ -3,6 +3,8 @@ import "@fontsource/fraunces/400.css"
 import "@fontsource/inter/400.css"
 import "@fontsource/inter/500.css"
 import "@fontsource/jetbrains-mono/400.css"
+import "@scudra/shared/styles/index.css"
+import "@scudra/shared/styles/experience.css"
 
 interface Props {
   title: string
@@ -21,11 +23,12 @@ const { title, description } = Astro.props
     <title>{title}</title>
     <style is:global>
       :root {
+        /* Canonical Scudra palette — matches packages/shared tokens. */
         --paper: #faf8f3;
-        --paper-warm: #f4f1e8;
-        --ink: #26262e;
-        --ink-muted: #6d6d78;
-        --accent: #c26b3f;
+        --paper-warm: #f5f1e8;
+        --ink: #1a1a1a;
+        --ink-muted: #6b6b6b;
+        --accent: #c45f34;
         --line: #e3ddd0;
       }
       * {

@@ -20,7 +20,7 @@ A cloud agent is a program whose body is infrastructure: a browser in Frankfurt,
 
 ## Featured experience
 
-- **[Blindspot](apps/blindspot)** — Privacy-preserving onchain investigation. Resolve an ENS name, run Mobula inside an ephemeral sandbox, enrich off-chain context through a stealth browser, and receive a verdict.
+- **[Blindspot](apps/blindspot)** — Privacy-preserving onchain investigation. Look up an ENS name and watch an agent quietly investigate it, then receive a verdict — all from a disposable cloud machine that leaves no trace.
 
 ## Repository structure
 
@@ -51,6 +51,22 @@ pnpm dev:blindspot
 # Or the Witness geo-diff experience
 pnpm dev:witness
 ```
+## Wiring the live experiences into the site
+
+The interactive experiences (`apps/blindspot`, `apps/witness`, `apps/builder`)
+are separate apps from the marketing site. When you deploy them, point the
+site's CTAs at their public URLs via the site's `PUBLIC_*` env vars (see
+`apps/site/.env.example`):
+
+| Variable | Experience |
+|---|---|
+| `PUBLIC_BLINDSPOT_URL` | The 3D dossier |
+| `PUBLIC_WITNESS_URL` | The geo-diff witness |
+| `PUBLIC_BUILDER_URL` | The builder |
+
+Until set, the CTAs fall back to the static pages on the site, so nothing
+breaks without deployments. These are read by `EXPERIENCE_URLS` in
+`packages/shared`.
 
 ## Development
 
@@ -73,13 +89,13 @@ Read the full manifesto in [`content/manifesto.md`](content/manifesto.md) or at 
 
 Each recipe is a real, runnable agent:
 
-- [Blindspot — The Investigator](content/recipes/blindspot.md)
-- [Stealth Scraper — The Witness](content/recipes/stealth-scraper.md)
+- [Blindspot](content/recipes/blindspot.md)
+- [The Witness](content/recipes/stealth-scraper.md)
 - [Code Interpreter — The Analyst](content/recipes/code-interpreter.md)
 - [Desktop Operator — The Controller](content/recipes/desktop-operator.md)
 - [Browser Profiles — The Chameleon](content/recipes/browser-profiles.md)
 - [Session Recording — The Archivist](content/recipes/the-archivist.md)
-- [Sandbox Preview — The Builder](content/recipes/the-builder.md)
+- [The Builder](content/recipes/the-builder.md)
 
 See [`content/roadmap.md`](content/roadmap.md) for the full operating plan:
 the characters, the thesis, the sequencing, and the publishing formula.

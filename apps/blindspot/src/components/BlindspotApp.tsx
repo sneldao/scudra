@@ -229,7 +229,7 @@ export default function BlindspotApp() {
     async (name: string) => {
       setPhase("loading")
       setErrorText("")
-      setLoadingText("resolving identity...")
+      setLoadingText("Resolving identity…")
 
       const data: Partial<InvestigationData> = {
         ensName: name,
@@ -258,11 +258,11 @@ export default function BlindspotApp() {
             data.aliases = event.aliases || []
             data.website = event.website
             data.twitter = event.twitter
-            setLoadingText("spawning ephemeral sandbox...")
+            setLoadingText("Booting a disposable machine…")
             break
 
           case "sandbox:booted":
-            setLoadingText("routing through residential proxy...")
+            setLoadingText("Connecting through a residential IP…")
             break
 
           case "browser:connected":
@@ -270,22 +270,22 @@ export default function BlindspotApp() {
               data.egressIp = event.egressIp
               data.proxyCountry = event.proxyCountry
             }
-            setLoadingText("fetching onchain portfolio...")
+            setLoadingText("Fetching the onchain portfolio…")
             break
 
           case "mobula:data":
             data.totalValueUSD = event.totalValueUSD
             data.assetCount = event.assetCount
             data.realizedPnlUSD = event.realizedPnlUSD
-            setLoadingText("enriching off-chain context...")
+            setLoadingText("Gathering off-chain context…")
             break
 
           case "offchain:data":
-            setLoadingText("analyzing risk...")
+            setLoadingText("Analyzing risk…")
             break
 
           case "analyzing":
-            setLoadingText("assembling dossier...")
+            setLoadingText("Assembling the dossier…")
             break
 
           case "complete":
