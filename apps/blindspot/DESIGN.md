@@ -636,7 +636,9 @@ builds. Three.js is imported as a module: `import * as THREE from 'three'`.
   memory devices once per load and caps the render pixel ratio (1.5), the VSM
   shadow map (1024×1024), and the panel texture scale (1×) — cutting the
   worst-case texture budget roughly in half on constrained hardware without
-  any manual tuning.
+  any manual tuning. On the most constrained devices (very low cores/memory)
+  it also disables shadow casting on sub-planes (the floating chart
+  segments), keeping only the current panel's grounding shadow.
 - **Texture disposal**: on "new investigation", all textures and geometries
   are disposed via `texture.dispose()` and `geometry.dispose()` to prevent
   GPU memory leaks across multiple investigations.

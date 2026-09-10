@@ -305,7 +305,9 @@ Implemented on branch `cline/vbmd5xy7`:
   app-specific rules only. Both apps depend on `@scudra/shared` (workspace:*).
 - Cap Blindspot's texture budget on low-end: new `apps/blindspot/src/client/
   quality.ts` auto-detects low-end devices and caps render pixel ratio, VSM
-  shadow map, blur samples, and panel texture scale (DESIGN.md updated).
+  shadow map, blur samples, and panel texture scale (DESIGN.md updated). On
+  the most constrained devices it also disables shadow casting on sub-planes
+  (the chart segments), keeping only the current panel's grounding shadow.
 - `PUBLIC_*` experience URLs: mechanism is fully wired (`EXPERIENCE_URLS` in
   `packages/shared`) and documented in `apps/site/.env.example` + README. The
   actual values still need to be set once the apps are deployed (cannot be
