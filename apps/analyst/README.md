@@ -110,11 +110,16 @@ pnpm --filter @scudra/analyst test     # 88 tests: docker flags, fake-docker lif
 
 ## Deploy on Vultr
 
-1. Create a **Cloud Compute** VM (Ubuntu 24.04, 2 vCPU / 4 GB).
-2. `scp apps/analyst/deploy/setup-vultr.sh root@VM:` and run it (Docker, Node, pnpm, firewall, `scudra` user).
+Verified working configuration (deployed 2026-11):
+
+- **Live demo:** https://149.248.9.254.sslip.io — `vc2-1c-1gb` (1 vCPU / 1 GB), Los Angeles, ~$0.01/hr.
+  On 1 GB, set `MAX_CONCURRENT_SANDBOXES=1` — each sandbox is capped at 512 MB.
+
+1. Create a **Cloud Compute** VM (Ubuntu 24.04; `vc2-1c-1gb` is sufficient — 2 vCPU / 4 GB only if you expect concurrent judges).
+2. `scp apps/analyst/deploy/setup-vultr.sh root@VM:` and run it (Docker, Node, pnpm, firewall, `scudra` user). Then copy your SSH key into `/home/scudra/.ssh/authorized_keys` if you want to log in as `scudra`.
 3. As `scudra`: clone, build the sandbox image, create `.env` (`TRUST_PROXY=1`), `pnpm install && pnpm build:analyst`.
 4. Gate: `cli --doctor` all ✓, then `cli --probe` 7/7 BLOCKED. Do not go public until both pass.
-5. `deploy/scudra-analyst.service` → systemd; `deploy/Caddyfile` → HTTPS (SSE-safe).
+5. `deploy/scudra-analyst.service` → systemd; `deploy/Caddyfile` → HTTPS (SSE-safe). No domain? `<ip>.sslip.io` works with Let's Encrypt.
 
 > **Important:** run the app directly on the VM, not inside a container with
 > `/var/run/docker.sock` mounted — that would give the app root on the host.

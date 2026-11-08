@@ -37,6 +37,9 @@ a permanent, live part of the interface. On mobile the machine moves to the top.
 
 1. **Answer** — serif, large, the point. Chart below it, with provenance
    ("produced inside the sandbox · sha256 …"). Models explain; they don't invent.
+   A verifier badge (pass/fail/uncertain) sits under the answer — a second
+   model family judges whether the output actually answers the task, and its
+   verdict is signed into the receipt.
 2. **How it got there** — collapsible trace: each attempt's code and its real
    output. Failed attempts stay visible; self-repair is a feature, not a secret.
 3. **Signed receipt** — hashes of code, output, dataset, artifacts + HMAC.
