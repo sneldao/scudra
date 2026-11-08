@@ -5,5 +5,5 @@ RUN pip install --no-cache-dir pandas numpy matplotlib \
  && rm -rf /root/.cache
 # Baked into the image so the container needs no `--env` flags (keeps the
 # "no env into the sandbox" guarantee literally true and testable).
-ENV MPLBACKEND=Agg MPLCONFIGDIR=/tmp/mpl PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+ENV MPLBACKEND=Agg MPLCONFIGDIR=/tmp/mpl PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 GPG_KEY=
 WORKDIR /work

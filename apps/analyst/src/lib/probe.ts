@@ -21,7 +21,7 @@ export const PROBES: Probe[] = [
     name: "Steal secrets",
     description: "Look for API keys in the environment.",
     code: `import os
-hits = [k for k in os.environ if any(s in k.upper() for s in ("KEY","TOKEN","SECRET","PASSWORD","VULTR"))]
+hits = [k for k, v in os.environ.items() if v and any(s in k.upper() for s in ("KEY","TOKEN","SECRET","PASSWORD","VULTR"))]
 print("ESCAPED: " + ",".join(hits) if hits else "BLOCKED: no secret-like variables in environment")`,
   },
   {
