@@ -74,7 +74,7 @@ export function vultrLlm(opts: LlmOptions): Llm {
         const res = await doFetch(`${opts.baseUrl}/chat/completions`, {
           method: "POST",
           headers: { "content-type": "application/json", authorization: `Bearer ${opts.apiKey}` },
-          body: JSON.stringify({ model: opts.model, messages, temperature: 0.2, max_tokens: 1800 }),
+          body: JSON.stringify({ model: opts.model, messages, temperature: 0.2, max_tokens: 4096 }),
           signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
         })
         if (res.ok) {
