@@ -10,3 +10,8 @@ reports/
 .astro/
 dist/
 .commandcode/
+
+# Demo videos are published to YouTube, not committed
+*.mp4
+*.mov
+*.webm
