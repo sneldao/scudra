@@ -118,7 +118,9 @@ function hostile(): string {
     ["T-2011", "vandelay", "Bug", "Search returns stale results."],
     ["T-2012", "massive", "Billing", "Proration question for annual plan."],
   ]
-  return "ticket_id,customer,category,notes\n" + rows.map((r) => r.join(",")).join("\n") + "\n"
+  const q = (s: string) => `"${s.replace(/"/g, '""')}"`
+  const lines = rows.map(([id, cust, cat, note]) => `${id},${cust},${cat},${q(note!)}`)
+  return "ticket_id,customer,category,notes\n" + lines.join("\n") + "\n"
 }
 
 export const SAMPLES: Sample[] = [
