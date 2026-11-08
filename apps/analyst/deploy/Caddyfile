@@ -1,5 +1,6 @@
 # Replace with your domain (an A record pointing at the VM). Caddy fetches TLS automatically.
-analyst.example.com {
+# Live deployment also serves 149.248.9.254.sslip.io alongside this domain.
+scudra.persidian.com {
 	reverse_proxy 127.0.0.1:4570 {
 		# SSE must not be buffered
 		flush_interval -1

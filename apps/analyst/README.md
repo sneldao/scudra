@@ -112,7 +112,7 @@ pnpm --filter @scudra/analyst test     # 88 tests: docker flags, fake-docker lif
 
 Verified working configuration (deployed 2026-11):
 
-- **Live demo:** https://149.248.9.254.sslip.io — `vc2-1c-1gb` (1 vCPU / 1 GB), Los Angeles, ~$0.01/hr.
+- **Live demo:** https://scudra.persidian.com — `vc2-1c-1gb` (1 vCPU / 1 GB), Los Angeles, ~$0.01/hr.
   On 1 GB, set `MAX_CONCURRENT_SANDBOXES=1` — each sandbox is capped at 512 MB.
 
 1. Create a **Cloud Compute** VM (Ubuntu 24.04; `vc2-1c-1gb` is sufficient — 2 vCPU / 4 GB only if you expect concurrent judges).

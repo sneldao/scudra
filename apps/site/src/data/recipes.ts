@@ -40,7 +40,7 @@ export const recipes: Recipe[] = [
     primitives: ["sandbox"],
     status: "live",
     source: "apps/analyst",
-    demo: "https://149.248.9.254.sslip.io",
+    demo: "https://scudra.persidian.com",
   },
   {
     slug: "desktop-operator",
