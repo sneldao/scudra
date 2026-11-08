@@ -3,8 +3,8 @@ export const SITE = {
   tagline: "A lab for cloud-native agents.",
   description:
     "Recipes, experiences, and thought leadership for browsers, sandboxes, and desktops that run in the cloud.",
-  url: "https://scudra.dev",
-  github: "https://github.com/scudra/scudra",
+  url: "https://github.com/sneldao/scudra",
+  github: "https://github.com/sneldao/scudra",
 } as const
 
 export const NAV = [

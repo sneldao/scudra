@@ -98,7 +98,7 @@ Use AI to build it? We did. The whole thing is public.
 
 ## Links
 
-- Site — https://scudra.dev
+- Repo — https://github.com/sneldao/scudra
 - Solari — https://getsolari.com
 - Solari Docs — https://docs.getsolari.com
 
