@@ -1,0 +1,46 @@
+---
+import Layout from "../../layouts/Layout.astro"
+---
+
+<Layout
+  title="The Analyst — Scudra"
+  description="Blast Radius Zero. An LLM writes code that runs in a locked-down, throwaway container. Built for the Vultr Agent Rush hackathon."
+>
+  <article class="sc-container py-20 max-w-[72ch]" data-reveal>
+    <p class="text-xs uppercase tracking-[0.12em] text-ink-muted mb-4">
+      <a href="/experiences" class="no-underline text-inherit hover:text-ink">← Experiences</a>
+    </p>
+
+    <h1 class="font-serif text-[clamp(2.25rem,5vw,3.5rem)] leading-[1.1] tracking-tight mb-4">
+      The Analyst
+    </h1>
+    <p class="text-lg text-ink-muted leading-relaxed mb-8">
+      Blast Radius Zero. An LLM writes code that runs in a locked-down, throwaway container on a cloud VM. Real output, self-repair, a one-click "attack the sandbox" containment demo, and verified teardown.
+    </p>
+
+    <div class="flex flex-wrap gap-3 mb-12">
+      <a
+        href="https://github.com/scudra/scudra/tree/main/apps/analyst"
+        class="sc-button-primary"
+      >
+        Run it locally
+      </a>
+      <a
+        href="/recipes/code-interpreter"
+        class="sc-button-secondary"
+      >
+        Read the recipe
+      </a>
+    </div>
+
+    <div class="p-6 bg-paper-warm rounded-sc border border-black/5">
+      <h2 class="font-serif text-2xl mb-4">What it demonstrates</h2>
+      <ul class="flex flex-col gap-3 text-ink-muted leading-relaxed list-disc pl-5">
+        <li><strong>Provider-agnostic sandbox.</strong> A small provider interface with a hardened Docker implementation — no network, no secrets, capped resources, verified teardown.</li>
+        <li><strong>Bounded self-repair.</strong> The agent loop retries failed code a limited number of times, then gives up cleanly.</li>
+        <li><strong>Blast Radius Zero.</strong> A seven-probe containment board lets you attack the sandbox and watch every escape attempt fail.</li>
+        <li><strong>Signed receipts.</strong> Every run produces an HMAC-signed receipt you can verify — or try to forge.</li>
+      </ul>
+    </div>
+  </article>
+</Layout>

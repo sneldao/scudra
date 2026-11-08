@@ -1,0 +1,45 @@
+---
+import Layout from "../../layouts/Layout.astro"
+---
+
+<Layout
+  title="The Witness — Scudra"
+  description="The same URL, seen from three countries at once. A geo-diff experience built with stealth cloud browsers and residential proxies."
+>
+  <article class="sc-container py-20 max-w-[72ch]" data-reveal>
+    <p class="text-xs uppercase tracking-[0.12em] text-ink-muted mb-4">
+      <a href="/experiences" class="no-underline text-inherit hover:text-ink">← Experiences</a>
+    </p>
+
+    <h1 class="font-serif text-[clamp(2.25rem,5vw,3.5rem)] leading-[1.1] tracking-tight mb-4">
+      The Witness
+    </h1>
+    <p class="text-lg text-ink-muted leading-relaxed mb-8">
+      The same URL, seen from three countries at once. The Witness visits a page from the United States, Germany, and Singapore — each through a stealth browser with a residential proxy — extracts the comparable surface of what each location saw, and diffs the results live.
+    </p>
+
+    <div class="flex flex-wrap gap-3 mb-12">
+      <a
+        href="https://github.com/scudra/scudra/tree/main/apps/witness"
+        class="sc-button-primary"
+      >
+        Run it locally
+      </a>
+      <a
+        href="/recipes/stealth-scraper"
+        class="sc-button-secondary"
+      >
+        Read the recipe
+      </a>
+    </div>
+
+    <div class="p-6 bg-paper-warm rounded-sc border border-black/5">
+      <h2 class="font-serif text-2xl mb-4">What it demonstrates</h2>
+      <ul class="flex flex-col gap-3 text-ink-muted leading-relaxed list-disc pl-5">
+        <li><strong>Stealth + residential proxy.</strong> Each location runs <code>stealth: true</code> with a country proxy, and the egress IP is confirmed on every run as the alibi.</li>
+        <li><strong>Concurrent egress.</strong> The three locations run in parallel — a geo-diff must sample the world at roughly the same moment.</li>
+        <li><strong>The teardown moment.</strong> Every browser session is closed and released after its single observation. Nothing persists.</li>
+      </ul>
+    </div>
+  </article>
+</Layout>

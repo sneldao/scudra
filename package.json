@@ -2,7 +2,7 @@
   "name": "scudra",
   "version": "0.1.0",
   "private": true,
-  "description": "Scudra — a lab for cloud-native agents. Recipes, experiences, and thought leadership for browsers, sandboxes, and desktops that run in the cloud.",
+  "description": "Scudra \u2014 a lab for cloud-native agents. Recipes, experiences, and thought leadership for browsers, sandboxes, and desktops that run in the cloud.",
   "license": "MIT",
   "author": "Scudra Contributors",
   "type": "module",
@@ -13,6 +13,8 @@
     "build:site": "pnpm --filter site build",
     "build:blindspot": "pnpm --filter blindspot build",
     "build:witness": "pnpm --filter witness build",
+    "dev:analyst": "pnpm --filter @scudra/analyst dev",
+    "build:analyst": "pnpm --filter @scudra/analyst build",
     "dev:builder": "pnpm --filter builder dev",
     "build:builder": "pnpm --filter builder build",
     "build": "pnpm -r build",
@@ -21,7 +23,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "turbo run test",
-    "prepare": "bash scripts/install-hooks.sh"
+    "prepare": "bash scripts/install-hooks.sh",
+    "dev:analyst:mock": "pnpm --filter @scudra/analyst dev:mock"
   },
   "devDependencies": {
     "eslint": "^9.20.0",

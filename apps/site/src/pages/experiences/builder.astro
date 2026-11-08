@@ -1,0 +1,46 @@
+---
+import Layout from "../../layouts/Layout.astro"
+---
+
+<Layout
+  title="The Builder — Scudra"
+  description="An agent writes an application, boots it inside a sandbox with a live preview URL, then destroys it. Prompt. Boot. Build. Vanish."
+>
+  <article class="sc-container py-20 max-w-[72ch]" data-reveal>
+    <p class="text-xs uppercase tracking-[0.12em] text-ink-muted mb-4">
+      <a href="/experiences" class="no-underline text-inherit hover:text-ink">← Experiences</a>
+    </p>
+
+    <h1 class="font-serif text-[clamp(2.25rem,5vw,3.5rem)] leading-[1.1] tracking-tight mb-4">
+      The Builder
+    </h1>
+    <p class="text-lg text-ink-muted leading-relaxed mb-8">
+      Prompt. Boot. Build. Vanish. The Builder plans a small app from a prompt, writes it as a self-contained HTML file, boots it inside a fresh sandbox, and exposes a live preview URL. One minute later, the sandbox is destroyed — and the URL becomes a tombstone.
+    </p>
+
+    <div class="flex flex-wrap gap-3 mb-12">
+      <a
+        href="https://github.com/scudra/scudra/tree/main/apps/builder"
+        class="sc-button-primary"
+      >
+        Run it locally
+      </a>
+      <a
+        href="/recipes/the-builder"
+        class="sc-button-secondary"
+      >
+        Read the recipe
+      </a>
+    </div>
+
+    <div class="p-6 bg-paper-warm rounded-sc border border-black/5">
+      <h2 class="font-serif text-2xl mb-4">What it demonstrates</h2>
+      <ul class="flex flex-col gap-3 text-ink-muted leading-relaxed list-disc pl-5">
+        <li><strong>Software born on stage.</strong> Plan → write → boot → preview, streamed live over SSE.</li>
+        <li><strong>Port preview.</strong> A server running inside the VM is exposed on the public internet at a <code>*.preview</code> URL the visitor can click.</li>
+        <li><strong>Guaranteed teardown.</strong> The sandbox is destroyed on every path — success, failure, or timeout.</li>
+        <li><strong>The tombstone.</strong> The finale invites you to revisit the URL after the kill and watch it fail. You were never there.</li>
+      </ul>
+    </div>
+  </article>
+</Layout>

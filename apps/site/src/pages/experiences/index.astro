@@ -27,15 +27,38 @@ import Layout from "../../layouts/Layout.astro"
         </div>
       </article>
 
-      <article class="p-6 bg-paper-warm rounded-sc border border-black/5 opacity-65" data-reveal>
-        <p class="text-[0.7rem] uppercase tracking-[0.08em] text-ink-muted mb-3">Coming soon</p>
-        <h2 class="font-serif text-2xl mb-2">Stealth Scraper</h2>
+      <article class="p-6 bg-paper-warm rounded-sc border border-black/5" data-reveal>
+        <p class="text-[0.7rem] uppercase tracking-[0.08em] text-ink-muted mb-3">Live</p>
+        <h2 class="font-serif text-2xl mb-2">The Builder</h2>
         <p class="text-ink-muted leading-relaxed mb-6">
-          A distributed witness that captures web pages from multiple egress points and compares what each location sees.
+          Prompt. Boot. Build. Vanish. An agent writes an app, boots it in a sandbox with a live preview URL, then destroys it — and the URL becomes a tombstone.
         </p>
-        <span class="inline-block sc-button-secondary opacity-75 cursor-default">
+        <div class="flex flex-wrap gap-3">
+          <a href="/experiences/builder" class="sc-button-accent">Open experience</a>
+          <a href="/recipes/the-builder" class="sc-button-secondary">Read recipe</a>
+        </div>
+      </article>
+
+      <article class="p-6 bg-paper-warm rounded-sc border border-black/5 opacity-65" data-reveal>
+        <p class="text-[0.7rem] uppercase tracking-[0.08em] text-ink-muted mb-3">In the lab</p>
+        <h2 class="font-serif text-2xl mb-2">The Witness</h2>
+        <p class="text-ink-muted leading-relaxed mb-6">
+          The same URL, seen from three countries at once. Stealth browsers on residential proxies visit a page from the US, Germany, and Singapore — then diff what each location saw.
+        </p>
+        <a href="/experiences/witness" class="inline-block sc-button-secondary opacity-75">
           In the lab
-        </span>
+        </a>
+      </article>
+
+      <article class="p-6 bg-paper-warm rounded-sc border border-black/5 opacity-65" data-reveal>
+        <p class="text-[0.7rem] uppercase tracking-[0.08em] text-ink-muted mb-3">In the lab</p>
+        <h2 class="font-serif text-2xl mb-2">The Analyst</h2>
+        <p class="text-ink-muted leading-relaxed mb-6">
+          Blast Radius Zero. An LLM writes code that runs in a locked-down, throwaway container — with self-repair, a containment board, and signed run receipts.
+        </p>
+        <a href="/experiences/analyst" class="inline-block sc-button-secondary opacity-75">
+          In the lab
+        </a>
       </article>
     </div>
   </section>

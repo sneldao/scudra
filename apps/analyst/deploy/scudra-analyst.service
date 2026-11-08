@@ -1,0 +1,22 @@
+# /etc/systemd/system/scudra-analyst.service
+[Unit]
+Description=Scudra Analyst (control plane)
+After=network-online.target docker.service
+Requires=docker.service
+
+[Service]
+User=scudra
+WorkingDirectory=/home/scudra/scudra/apps/analyst
+EnvironmentFile=/home/scudra/scudra/apps/analyst/.env
+Environment=HOST=127.0.0.1 PORT=4570 NODE_ENV=production
+ExecStart=/usr/bin/node dist/server/entry.mjs
+Restart=on-failure
+RestartSec=3
+# Hardening for the control plane itself
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

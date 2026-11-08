@@ -78,8 +78,9 @@ export const recipes: Recipe[] = [
     description:
       "An agent writes an application and boots it inside a sandbox with a live preview URL. Interact with software born on stage, then watch the sandbox — and the software — be destroyed.",
     primitives: ["sandbox"],
-    status: "cooking",
+    status: "live",
     source: "apps/builder",
+    demo: "/experiences/builder",
   },
 ]
 

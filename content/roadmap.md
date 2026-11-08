@@ -11,7 +11,7 @@ design principle, not a security feature.**
 
 Every experience puts ephemerality on stage. The teardown moment — sandbox
 killed, browser closed, dossier closing — is a deliberate, dramatic beat in
-each demo. The signature line: *you were never there.*
+each demo. The signature line: _you were never there._
 
 ## The formula
 
@@ -32,15 +32,15 @@ and one all-three experience so the lab covers the full taxonomy.
 
 ## The cast
 
-| Character | Primitive(s) | Solari foundation | Status |
-|---|---|---|---|
-| Blindspot — The Investigator | Sandbox + Browser | `sandbox-quickstart-ts`, `browser-stealth-proxy-ts` | Live |
-| Stealth Scraper — The Witness | Browser | `browser-stealth-proxy-ts` | **In build** (`apps/witness`) |
-| Code Interpreter — The Analyst | Sandbox | `sandbox-code-interpreter-py` | Cooking |
-| Desktop Operator — The Controller | Desktop | `desktop-computer-use-py` | Planned |
-| Browser Profiles — The Chameleon | Browser | `browser-profiles-ts` | Planned |
-| Session Recording — The Archivist | Browser | `browser-session-recording-py` | Planned |
-| Sandbox Preview — The Builder | Sandbox | `sandbox-port-preview-ts`, `sandbox-quickstart-ts` | **In build** (`apps/builder`) |
+| Character                         | Primitive(s)      | Solari foundation                                   | Status                        |
+| --------------------------------- | ----------------- | --------------------------------------------------- | ----------------------------- |
+| Blindspot — The Investigator      | Sandbox + Browser | `sandbox-quickstart-ts`, `browser-stealth-proxy-ts` | Live                          |
+| Stealth Scraper — The Witness     | Browser           | `browser-stealth-proxy-ts`                          | **In build** (`apps/witness`) |
+| Code Interpreter — The Analyst    | Sandbox           | Vultr Docker (provider seam; Solari optional)       | **In build** (`apps/analyst`) |
+| Desktop Operator — The Controller | Desktop           | `desktop-computer-use-py`                           | Planned                       |
+| Browser Profiles — The Chameleon  | Browser           | `browser-profiles-ts`                               | Planned                       |
+| Session Recording — The Archivist | Browser           | `browser-session-recording-py`                      | Planned                       |
+| Sandbox Preview — The Builder     | Sandbox           | `sandbox-port-preview-ts`, `sandbox-quickstart-ts`  | **In build** (`apps/builder`) |
 
 ## Progress log
 
@@ -59,6 +59,15 @@ and one all-three experience so the lab covers the full taxonomy.
   check, guaranteed teardown on every path, SSE beats, tombstone finale,
   CLI, 11 unit tests. Repo-wide suite now 62 tests. Note: the Blindspot
   `SOLARI_API_KEY` returns 401 — a fresh key is needed for live runs.
+- **Live smoke runs** (2026-11) — fresh `SOLARI_API_KEY` works for
+  auth and sandbox sessions, but the account is on the **free plan**:
+  stealth mode returns 402 `FeatureRequiresPlan`. **The Builder verified
+  end to end** (plan → write → boot → public preview URL → verified
+  teardown → tombstone) and flipped to live on the site. **The Witness**
+  is code-complete but blocked on a paid Solari plan for stealth+proxy.
+  Blindspot's stealth browser will hit the same gate. Site now has
+  experience pages for Builder, Witness, and Analyst.
+- **The Analyst** (2026-11) — `apps/analyst` for the Vultr Agent Rush hackathon (Challenge 1). Provider-agnostic sandbox interface; hardened Docker provider (no network/secrets, capped, orphan reaper, verified teardown); Vultr Serverless Inference agent loop with bounded self-repair; pandas/matplotlib sandbox image; validated artifacts (charts); HMAC-signed run receipts with a forge-it demo; 7-probe containment board; admission control; health/doctor tooling; mock mode so the product is developed with no Docker. Editorial UI with a sticky live machine panel. 80 unit tests (including a fake `docker` binary covering timeouts, OOM vs timeout, destroy verification, output caps) + WCAG AA axe checks + browser-verified flows. Remaining: live run on the Vultr VM (`--doctor`, `--probe`), deploy, demo video.
 - **Sequencing update** — The Builder was built before The Chameleon and
   The Archivist (it shares the most infrastructure with Blindspot/Witness).
 

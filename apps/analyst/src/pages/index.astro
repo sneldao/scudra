@@ -1,0 +1,11 @@
+---
+import Layout from "../layouts/Layout.astro"
+import AnalystApp from "../components/AnalystApp.tsx"
+---
+
+<Layout
+  title="Scudra Analyst — an agent that executes, safely"
+  description="Ask a question about your data. A model writes the code, a throwaway sandbox on Vultr runs it, and you get real output with a signed receipt."
+>
+  <AnalystApp client:load />
+</Layout>

@@ -4,7 +4,7 @@ A lab for cloud-native agents.
 
 **Scudra** is a collection of real-world recipes, experiences, and thought leadership for browsers, sandboxes, and desktops that run in the cloud.
 
-It is built on [Solari](https://getsolari.com), the platform that unifies cloud browsers, sandboxes, and desktops behind one API.
+The original experiences are built on [Solari](https://getsolari.com). The Analyst is provider-agnostic: Vultr (Cloud Compute + Serverless Inference) is the primary runtime, behind a small sandbox-provider interface that Solari and others can implement.
 
 ## Why cloud agents?
 
@@ -20,6 +20,8 @@ A cloud agent is a program whose body is infrastructure: a browser in Frankfurt,
 
 ## Featured experience
 
+- **[The Analyst](apps/analyst)** — _Blast Radius Zero._ An LLM (Vultr Serverless Inference) writes code that runs in a locked-down, throwaway container on a Vultr VM. Real output, self-repair, a one-click "attack the sandbox" containment demo, and verified teardown. Built for the Vultr Agent Rush hackathon.
+
 - **[Blindspot](apps/blindspot)** — Privacy-preserving onchain investigation. Resolve an ENS name, run Mobula inside an ephemeral sandbox, enrich off-chain context through a stealth browser, and receive a verdict.
 
 ## Repository structure
@@ -28,6 +30,7 @@ A cloud agent is a program whose body is infrastructure: a browser in Frankfurt,
 scudra/
 ├── apps/
 │   ├── site/        # Main site: manifesto, recipes, experiences
+│   ├── analyst/     # Blast Radius Zero: sandboxed code agent on Vultr
 │   ├── blindspot/   # Flagship interactive experience
 │   └── witness/     # The Witness: live geo-diff experience
 ├── packages/
@@ -47,6 +50,9 @@ pnpm dev:site
 
 # In another terminal, start the Blindspot experience
 pnpm dev:blindspot
+
+# The Analyst (needs Docker + Vultr inference key, see apps/analyst/README.md)
+pnpm dev:analyst
 
 # Or the Witness geo-diff experience
 pnpm dev:witness
