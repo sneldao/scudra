@@ -114,6 +114,7 @@ Verified working configuration (deployed 2026-11):
 
 - **Live demo:** https://scudra.persidian.com — `vc2-1c-1gb` (1 vCPU / 1 GB), Los Angeles, ~$0.01/hr.
   On 1 GB, set `MAX_CONCURRENT_SANDBOXES=1` — each sandbox is capped at 512 MB.
+- **Demo video:** https://youtu.be/8iDC_EZxAu4 — 2-minute walkthrough with the containment moment (7/7 probes BLOCKED, verified teardown).
 
 1. Create a **Cloud Compute** VM (Ubuntu 24.04; `vc2-1c-1gb` is sufficient — 2 vCPU / 4 GB only if you expect concurrent judges).
 2. `scp apps/analyst/deploy/setup-vultr.sh root@VM:` and run it (Docker, Node, pnpm, firewall, `scudra` user). Then copy your SSH key into `/home/scudra/.ssh/authorized_keys` if you want to log in as `scudra`.
