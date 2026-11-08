@@ -36,10 +36,11 @@ export const recipes: Recipe[] = [
     title: "Code Interpreter — The Analyst",
     tagline: "Run untrusted code in an ephemeral sandbox.",
     description:
-      "Spawn a sandbox, execute Python or shell code, and return the result. The VM is destroyed after the task, so failed or malicious code cannot persist.",
+      "An LLM on Vultr Serverless Inference writes code that runs in a locked-down Docker sandbox on a Vultr VM — no network, no secrets, verified teardown, signed receipts, and a semantic verifier pass. Built for the Vultr Agent Rush hackathon.",
     primitives: ["sandbox"],
-    status: "cooking",
-    source: "examples/sandbox-code-interpreter-py",
+    status: "live",
+    source: "apps/analyst",
+    demo: "https://149.248.9.254.sslip.io",
   },
   {
     slug: "desktop-operator",

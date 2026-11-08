@@ -20,10 +20,16 @@ import Layout from "../../layouts/Layout.astro"
 
     <div class="flex flex-wrap gap-3 mb-12">
       <a
-        href="https://github.com/scudra/scudra/tree/main/apps/analyst"
+        href="https://149.248.9.254.sslip.io"
         class="sc-button-primary"
       >
-        Run it locally
+        Try the live demo
+      </a>
+      <a
+        href="https://github.com/sneldao/scudra/tree/main/apps/analyst"
+        class="sc-button-secondary"
+      >
+        View source
       </a>
       <a
         href="/recipes/code-interpreter"
@@ -39,6 +45,7 @@ import Layout from "../../layouts/Layout.astro"
         <li><strong>Provider-agnostic sandbox.</strong> A small provider interface with a hardened Docker implementation — no network, no secrets, capped resources, verified teardown.</li>
         <li><strong>Bounded self-repair.</strong> The agent loop retries failed code a limited number of times, then gives up cleanly.</li>
         <li><strong>Blast Radius Zero.</strong> A seven-probe containment board lets you attack the sandbox and watch every escape attempt fail.</li>
+        <li><strong>Verified answers.</strong> A second model judges whether the output actually answers the task — and the verdict is signed into the receipt.</li>
         <li><strong>Signed receipts.</strong> Every run produces an HMAC-signed receipt you can verify — or try to forge.</li>
       </ul>
     </div>
