@@ -107,6 +107,36 @@ Browser ──HTTPS──▶ Astro SSR app (the control plane)
   there is, and the only one that tells us what to build next.
 - **Delete.** Their case, their call.
 
+## Two audiences, in one case
+
+Every case holds two kinds of document, and they are **not** equally shareable:
+
+| Document     | Audience       | Why                                                                                                                      |
+| ------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Receipt**  | Publishable    | Signed with Ed25519, and the public key is published — anyone can verify it without trusting us. That is what it is for. |
+| **Findings** | Private, yours | What you found about a subject. Sharing it is your call, not the tool's.                                                 |
+
+So the export separates them explicitly: a `shareable` block holding the
+receipt, and the case material beside it with a note saying which is which.
+The export is your document; the tool's job is to make the distinction legible,
+not to make the decision for you.
+
+## Who can read a case
+
+You. Each browser gets an **owner key** on first use, in an httpOnly cookie.
+Only its SHA-256 fingerprint is stored, and every read, export, feedback and
+delete is scoped to it.
+
+The list is filtered too — scoping only the reads would have left every case
+enumerable, which was the actual hole this closed. A case that exists but is
+not yours is reported as _missing_, not _forbidden_: "forbidden" would confirm
+the id is real, which is information a stranger should not get for free.
+
+**There are no accounts yet.** No login, no password, no email recovery, no
+cross-device access. Clearing your cookies loses access to your cases — which
+is why the export exists and why it is the thing to keep. Real accounts and
+scoped team keys are Phase 2.
+
 ## Run it
 
 ```bash
@@ -124,23 +154,27 @@ key is generated, which works but cannot be verified by a third party.
 
 ## API
 
-| Endpoint                        | What it does                                  |
-| ------------------------------- | --------------------------------------------- |
-| `GET /api/investigate?name`     | SSE stream of the investigation               |
-| `GET /api/cases`                | The user's cases, newest first                |
-| `GET /api/cases/[id]`           | One case in full                              |
-| `DELETE /api/cases/[id]`        | The user deletes their own evidence           |
-| `POST /api/cases/[id]/feedback` | `wrong` / `incomplete` / `right`, plus a note |
-| `GET /api/cases/[id]/export`    | JSON or HTML export, receipt included         |
-| `GET /api/verify`               | The public key                                |
-| `POST /api/verify`              | Check a receipt — no secret, no account       |
-| `POST /api/waitlist`            | Join the waitlist                             |
-| `POST /api/analytics`           | First-party usage events                      |
-| `GET /api/stats`                | The operator's view of how it is being used   |
+| Endpoint                        | What it does                                  | Access       |
+| ------------------------------- | --------------------------------------------- | ------------ |
+| `GET /api/investigate?name`     | SSE stream of the investigation               | public       |
+| `GET /api/cases`                | The user's cases, newest first                | owner        |
+| `GET /api/cases/[id]`           | One case in full                              | owner        |
+| `DELETE /api/cases/[id]`        | The user deletes their own evidence           | owner        |
+| `POST /api/cases/[id]/feedback` | `wrong` / `incomplete` / `right`, plus a note | owner        |
+| `GET /api/cases/[id]/export`    | JSON or HTML export, receipt included         | owner        |
+| `GET /api/verify`               | The public key                                | public       |
+| `POST /api/verify`              | Check a receipt — no secret, no account       | public       |
+| `POST /api/waitlist`            | Join the waitlist                             | public       |
+| `POST /api/analytics`           | First-party usage events                      | public       |
+| `GET /api/stats`                | The operator's view of how it is being used   | operator key |
 
 `DELETE` is protected by Astro's origin check: a same-origin request works, a
 cross-site one is refused. The `POST` endpoints take JSON and are CORS-open so
 the site can post to them.
+
+**Owner-scoped** means the case endpoints require the caller's owner key. A
+case id alone is not authorisation, and the list is filtered too — scoping only
+the reads would have left every case enumerable.
 
 ## Deploy
 
@@ -154,12 +188,15 @@ cd apps/blindspot && node dist/server/entry.mjs
 
 What a deployment needs:
 
-- `SOLARI_API_KEY` and `MOBULA_API_KEY` — without them the API returns a
-  clear message naming which one is missing.
-- `BLINDSPOT_STORE_PATH` — where the SQLite file lives. **Put it on a
-  persistent volume**; the default is `data/blindspot.db` relative to the
-  working directory, and a case store that vanishes on redeploy is a case
-  store nobody can come back to.
+- `SOLARI_API_KEY` and `MOBULA_API_KEY` — without them the API names the one
+  that is missing.
+- `BLINDSPOT_CASE_DB` — the case store, the user's evidence. **Put it on a
+  persistent volume**; a store that vanishes on redeploy is a store nobody
+  can come back to.
+- `BLINDSPOT_OPERATOR_DB` — our own data: the waitlist (kept indefinitely)
+  and coarse usage counters. **A separate file on purpose**: the cases expire
+  and the waitlist does not, and one file means one backup carrying both
+  policies, one of which is wrong by the time the backup is restored.
 - `BLINDSPOT_SIGNING_KEY_FILE` — a path to the Ed25519 private key PEM.
   **A file, not an environment variable**: a PEM is multi-line, and systemd's
   `EnvironmentFile` parser consumes the backslash in a `\n` escape, leaving a
@@ -169,7 +206,17 @@ What a deployment needs:
 - `BLINDSPOT_RAW_TTL_HOURS` — how long the subject's raw material survives.
   Defaults to 24 hours.
 - `BLINDSPOT_OPERATOR_KEY` — if set, `/api/stats` requires it in the
-  `x-operator-key` header.
+  `x-operator-key` header. If it is **not** set, `/api/stats` refuses to
+  serve rather than serving openly.
+
+Put it behind Caddy or nginx for TLS and SSE-safe buffering, and give the
+process a writable data directory.
+
+**Astro needs `security.allowedDomains`** when it sits behind a
+TLS-terminating proxy. Without it Astro compares the browser's `Origin`
+against the request's own origin, sees `http://` where the browser sent
+`https://`, and rejects every non-GET request as cross-site — which made the
+DELETE endpoint unreachable from a browser and the delete button impossible.
 
 Put it behind Caddy or nginx for TLS and SSE-safe buffering, and give the
 process a writable data directory.

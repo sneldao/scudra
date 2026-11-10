@@ -372,6 +372,10 @@ release ships without someone using it and something we learned from them.
 | 1     | **Blindspot deployed on the primary domain**, the Analyst and lab moved aside      | **Done**                   |
 | 1     | The receipt key read from a FILE, because systemd mangles a PEM in an env var      | **Done**                   |
 | 1     | A degraded investigation when the stealth browser cannot start                     | **Done**                   |
+| 1     | **Case access control** — every case scoped to its owner; the list filtered too    | **Done**                   |
+| 1     | **The two audiences as a field** — the receipt is publishable, the case is not     | **Done**                   |
+| 1     | **The stores split by audience** — the user's cases vs our own contact list        | **Done**                   |
+| 1     | **The operator endpoint refuses to serve** rather than serving openly              | **Done**                   |
 | 2     | Accounts, scoped API keys, team sharing, MCP                                       | Not started                |
 | 3     | Paid tier, cost control, compliance surface                                        | Not started                |
 | 0     | **Own the stealth-browser primitive** (the Solari free-plan 402)                   | **Open — the big one**     |

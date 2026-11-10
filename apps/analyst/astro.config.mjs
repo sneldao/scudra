@@ -21,11 +21,7 @@ export default defineConfig({
     // host when allowedDomains is configured, and without it a TLS-terminating
     // proxy makes every non-GET request look cross-site. The patterns double
     // as a host-header-injection guard.
-    allowedDomains: [
-      { hostname: publicHost, protocol: "https" },
-      { hostname: "localhost" },
-      { hostname: "127.0.0.1" },
-    ],
+    allowedDomains: [{ hostname: publicHost, protocol: "https" }, { hostname: "localhost" }, { hostname: "127.0.0.1" }],
   },
   vite: {
     resolve: {

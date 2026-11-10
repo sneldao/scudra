@@ -14,6 +14,8 @@ The original experiences are built on [Solari](https://getsolari.com). The Analy
 
 The interesting part is the split. **The subject's data expires** — raw material about a target carries a short TTL and is purged. **The user's evidence does not** — the verdict, the sources, the feedback and the signed receipt live until the user deletes them. An investigator who cannot keep their findings has not bought anything.
 
+And the two are separated by _audience_, not just by lifetime: the **receipt** is publishable by design — signed, with the public key published, so anyone can verify it without trusting us — while the **findings** are the user's private working file. Each case is readable only by the browser that ran it.
+
 Every figure the verdict relies on is recomputed from the raw records and checked. A number that cannot be confirmed is flagged, not quietly printed.
 
 ## Why cloud agents?

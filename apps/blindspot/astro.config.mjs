@@ -32,11 +32,7 @@ export default defineConfig({
     // The patterns are also a host-header-injection guard: a request whose
     // X-Forwarded-Host matches none of them has that header ignored, and the
     // request's own host is used instead.
-    allowedDomains: [
-      { hostname: publicHost, protocol: "https" },
-      { hostname: "localhost" },
-      { hostname: "127.0.0.1" },
-    ],
+    allowedDomains: [{ hostname: publicHost, protocol: "https" }, { hostname: "localhost" }, { hostname: "127.0.0.1" }],
   },
   vite: {
     resolve: {
