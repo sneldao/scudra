@@ -13,7 +13,7 @@
 // aggregate counts, and the abuse surface is a number going up.
 
 import type { APIRoute } from "astro"
-import { getStore } from "../../server/store-singleton.js"
+import { getOperatorStore } from "../../server/store-singleton.js"
 
 const ALLOWED_NAMES = new Set([
   "page.view",
@@ -43,7 +43,7 @@ export const POST: APIRoute = async ({ request }) => {
       ? (body.meta as Record<string, unknown>)
       : null
 
-  const store = getStore()
+  const store = getOperatorStore()
   try {
     store?.recordEvent(name, meta)
   } catch {

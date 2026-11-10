@@ -50,6 +50,13 @@ export interface InvestigateOptions {
   /** Persist the case so the user can come back to it. */
   store?: CaseStore | null
   /**
+   * The fingerprint of the owner this case belongs to.
+   *
+   * A case is the user's working file, and only they may read it. The
+   * fingerprint — not the key — is what gets stored.
+   */
+  ownerKeyHash?: string
+  /**
    * Cost of this investigation in USD cents.
    *
    * Tracked because agent economics are a decision the user has to make, and
@@ -59,7 +66,7 @@ export interface InvestigateOptions {
 }
 
 export async function investigate(ensName: string, opts: InvestigateOptions = {}): Promise<string> {
-  const { outputDir = "reports", onEvent, store = null, costUsdCents = 0 } = opts
+  const { outputDir = "reports", onEvent, store = null, ownerKeyHash = "", costUsdCents = 0 } = opts
   const emit = (event: InvestigationEvent) => {
     onEvent?.(event)
   }
@@ -274,6 +281,7 @@ export async function investigate(ensName: string, opts: InvestigateOptions = {}
           costUsdCents,
           durationMs: Date.now() - startTime,
           receipt,
+          ownerKeyHash,
         })
       } catch (err) {
         // A storage failure must not destroy the investigation that already

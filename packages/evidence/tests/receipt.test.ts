@@ -72,6 +72,19 @@ describe("receipts", () => {
     expect(verifyReceipt(r, { strict: true }).valid).toBe(false)
   })
 
+  it("marks itself publishable by default — a receipt is meant to be checked", () => {
+    expect(build().audience).toBe("publishable")
+  })
+
+  it("carries an explicit audience into the signed body", () => {
+    const r = build({ audience: "private" })
+    expect(r.audience).toBe("private")
+    // The audience is part of what is signed: it cannot be flipped to
+    // "publishable" without invalidating the signature.
+    expect(verifyReceipt(r).signatureValid).toBe(true)
+    expect(verifyReceipt({ ...r, audience: "publishable" }).signatureValid).toBe(false)
+  })
+
   it("does not throw on malformed input", () => {
     for (const bad of [null, undefined, {}, { signature: 5 }]) {
       expect(() => verifyReceipt(bad as never)).not.toThrow()

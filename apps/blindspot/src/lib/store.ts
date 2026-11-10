@@ -21,6 +21,17 @@
 // Getting this backwards in either direction breaks the product: keep
 // everything and you're a surveillance archive; keep nothing and you're a
 // demo.
+//
+// THIRD PART: who may read it. A case belongs to the investigator who ran
+// it. The store keeps a fingerprint of their owner key, and every read is
+// scoped to it. The RECEIPT is the opposite — signed, publishable, meant to
+// be handed to someone — and carries its own audience marker so the two are
+// never confused.
+//
+// The waitlist lives in a SEPARATE database (see waitlist.ts): it is our
+// contact list and we keep it forever, while the subject's raw material
+// expires. Two retention policies do not belong in one file, because one
+// backup would then carry both.
 
 import { DatabaseSync } from "node:sqlite"
 import { mkdirSync } from "node:fs"
@@ -45,6 +56,18 @@ export interface StoredSource {
   excerpt: string
 }
 
+/**
+ * Who a document is for.
+ *
+ * "private" — the user's working file. Not to be published. The default for
+ * everything in a case.
+ *
+ * "publishable" — safe to hand to someone who is not the user, because it is
+ * independently checkable. A receipt qualifies: it is signed, and anyone with
+ * the published public key can verify it without trusting us.
+ */
+export type Audience = "private" | "publishable"
+
 export interface StoredCase {
   id: string
   ensName: string
@@ -62,6 +85,8 @@ export interface StoredCase {
   durationMs: number
   /** The signed receipt — the part a third party can check. */
   receipt: unknown
+  /** Who this case is for. */
+  audience: Audience
   /** User's verdict on our output. Null until they answer. */
   feedback: "wrong" | "incomplete" | "right" | null
   feedbackNote: string | null
@@ -82,9 +107,11 @@ interface CaseRow {
   cost_usd_cents: number
   duration_ms: number
   receipt_json: string
+  audience: string
   feedback: string | null
   feedback_note: string | null
   feedback_at: string | null
+  owner_key_hash: string
 }
 
 export interface CaseStoreOptions {
@@ -95,7 +122,8 @@ export interface CaseStoreOptions {
 }
 
 export class CaseStore {
-  private db: DatabaseSync
+  /** Exposed for the operator's own inspection — never through the API. */
+  readonly db: DatabaseSync
   private rawTtlHours: number
 
   constructor(opts: CaseStoreOptions) {
@@ -118,27 +146,39 @@ export class CaseStore {
         cost_usd_cents INTEGER NOT NULL DEFAULT 0,
         duration_ms    INTEGER NOT NULL DEFAULT 0,
         receipt_json   TEXT NOT NULL,
+        audience       TEXT NOT NULL DEFAULT 'private',
         feedback       TEXT,
         feedback_note  TEXT,
         feedback_at    TEXT
       );
-      CREATE INDEX IF NOT EXISTS idx_cases_created ON cases (created_at DESC);
-      CREATE INDEX IF NOT EXISTS idx_cases_raw_expiry ON cases (raw_expires_at);
-      CREATE TABLE IF NOT EXISTS events (
-        id         INTEGER PRIMARY KEY AUTOINCREMENT,
-        name       TEXT NOT NULL,
-        meta       TEXT,
-        created_at TEXT NOT NULL
-      );
-      CREATE INDEX IF NOT EXISTS idx_events_name ON events (name, created_at DESC);
-      CREATE TABLE IF NOT EXISTS waitlist (
-        id         INTEGER PRIMARY KEY AUTOINCREMENT,
-        -- NOCASE: an address is an address whatever the case its owner typed.
-        email      TEXT COLLATE NOCASE NOT NULL UNIQUE,
-        source     TEXT,
-        created_at TEXT NOT NULL
-      );
     `)
+    this.migrate()
+  }
+
+  /**
+   * Bring an older database up to the current shape.
+   *
+   * CREATE TABLE IF NOT EXISTS does not add columns to an existing table, so
+   * a database created before these fields existed needs them added
+   * explicitly. Each is additive and has a default, so the rows already
+   * there keep working.
+   */
+  private migrate(): void {
+    const columns = new Set(
+      (this.db.prepare(`PRAGMA table_info(cases)`).all() as { name: string }[]).map((c) => c.name),
+    )
+    if (!columns.has("audience")) {
+      this.db.exec(`ALTER TABLE cases ADD COLUMN audience TEXT NOT NULL DEFAULT 'private'`)
+    }
+    if (!columns.has("owner_key_hash")) {
+      // Existing cases predate ownership. They are left unowned: the store
+      // will not hand them to anyone, because there is no owner to hand them
+      // to. An operator can reclaim them deliberately.
+      this.db.exec(`ALTER TABLE cases ADD COLUMN owner_key_hash TEXT NOT NULL DEFAULT ''`)
+    }
+    this.db.exec(`CREATE INDEX IF NOT EXISTS idx_cases_created ON cases (created_at DESC)`)
+    this.db.exec(`CREATE INDEX IF NOT EXISTS idx_cases_raw_expiry ON cases (raw_expires_at)`)
+    this.db.exec(`CREATE INDEX IF NOT EXISTS idx_cases_owner ON cases (owner_key_hash)`)
   }
 
   private static nowIso(): string {
@@ -163,6 +203,8 @@ export class CaseStore {
     costUsdCents: number
     durationMs: number
     receipt: unknown
+    /** The fingerprint of the owner this case belongs to. */
+    ownerKeyHash: string
   }): StoredCase {
     const createdAt = CaseStore.nowIso()
     const rawExpiresAt = new Date(Date.now() + this.rawTtlHours * 3_600_000).toISOString()
@@ -170,8 +212,8 @@ export class CaseStore {
       .prepare(
         `INSERT INTO cases
            (id, ens_name, address, created_at, raw_expires_at, risk_score, risk_label, summary,
-            signals_json, sources_json, cost_usd_cents, duration_ms, receipt_json)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            signals_json, sources_json, cost_usd_cents, duration_ms, receipt_json, audience, owner_key_hash)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
         input.id,
@@ -187,39 +229,67 @@ export class CaseStore {
         input.costUsdCents,
         input.durationMs,
         JSON.stringify(input.receipt),
+        "private",
+        input.ownerKeyHash,
       )
     return this.get(input.id)!
   }
 
+  /** Fetch a case by id, with no ownership check. Operator use only. */
   get(id: string): StoredCase | null {
     const row = this.db.prepare(`SELECT * FROM cases WHERE id = ?`).get(id) as CaseRow | undefined
     return row ? this.toCase(row) : null
   }
 
   /**
-   * Most recent first. `limit` bounds the page — a case list is not a dump.
+   * Fetch a case that belongs to this owner.
+   *
+   * This is the only read path the API should use. An id alone is not
+   * authorisation.
+   */
+  getForOwner(id: string, ownerKeyHash: string): StoredCase | null {
+    const row = this.db.prepare(`SELECT * FROM cases WHERE id = ? AND owner_key_hash = ?`).get(id, ownerKeyHash) as
+      CaseRow | undefined
+    return row ? this.toCase(row) : null
+  }
+
+  /**
+   * Most recent first, scoped to one owner.
+   *
+   * `limit` bounds the page — a case list is not a dump.
    *
    * `created_at` has millisecond resolution, so two cases saved in the same
    * tick share a timestamp. The rowid tiebreaker breaks that deterministically:
    * rowids increase with insertion order, so "most recent" is always stable.
    */
-  list(limit = 50): StoredCase[] {
-    const rows = this.db
-      .prepare(`SELECT * FROM cases ORDER BY created_at DESC, rowid DESC LIMIT ?`)
-      .all(limit) as unknown as CaseRow[]
+  list(limit = 50, ownerKeyHash?: string): StoredCase[] {
+    const rows = (ownerKeyHash === undefined
+      ? this.db.prepare(`SELECT * FROM cases ORDER BY created_at DESC, rowid DESC LIMIT ?`).all(limit)
+      : this.db
+          .prepare(`SELECT * FROM cases WHERE owner_key_hash = ? ORDER BY created_at DESC, rowid DESC LIMIT ?`)
+          .all(ownerKeyHash, limit)) as unknown as CaseRow[]
     return rows.map((r) => this.toCase(r))
   }
 
-  /** Record the user's verdict on our output. */
-  setFeedback(id: string, feedback: "wrong" | "incomplete" | "right", note: string | null): boolean {
+  /** Record the user's verdict on our output. Owner-scoped. */
+  setFeedback(
+    id: string,
+    ownerKeyHash: string,
+    feedback: "wrong" | "incomplete" | "right",
+    note: string | null,
+  ): boolean {
     const res = this.db
-      .prepare(`UPDATE cases SET feedback = ?, feedback_note = ?, feedback_at = ? WHERE id = ?`)
-      .run(feedback, note, CaseStore.nowIso(), id)
+      .prepare(`UPDATE cases SET feedback = ?, feedback_note = ?, feedback_at = ? WHERE id = ? AND owner_key_hash = ?`)
+      .run(feedback, note, CaseStore.nowIso(), id, ownerKeyHash)
     return Number(res.changes) > 0
   }
 
-  delete(id: string): boolean {
-    const res = this.db.prepare(`DELETE FROM cases WHERE id = ?`).run(id)
+  /** Delete a case. Owner-scoped. */
+  delete(id: string, ownerKeyHash?: string): boolean {
+    const res =
+      ownerKeyHash === undefined
+        ? this.db.prepare(`DELETE FROM cases WHERE id = ?`).run(id)
+        : this.db.prepare(`DELETE FROM cases WHERE id = ? AND owner_key_hash = ?`).run(id, ownerKeyHash)
     return Number(res.changes) > 0
   }
 
@@ -247,55 +317,15 @@ export class CaseStore {
   }
 
   /**
-   * Record a usage event.
-   *
-   * First-party, coarse, and self-hosted: which page was visited, which run
-   * completed, whether anyone came back. We cannot prioritise what to build
-   * next without knowing what is used, and "we have no idea" was the honest
-   * state of this project for a year.
-   *
-   * No identifiers, no fingerprinting, no third party.
-   */
-  recordEvent(name: string, meta: Record<string, unknown> | null = null): void {
-    this.db
-      .prepare(`INSERT INTO events (name, meta, created_at) VALUES (?, ?, ?)`)
-      .run(name, meta ? JSON.stringify(meta) : null, CaseStore.nowIso())
-  }
-
-  /** Counts per event name, newest first. */
-  eventCounts(): Record<string, number> {
-    const rows = this.db.prepare(`SELECT name, COUNT(*) AS n FROM events GROUP BY name`).all() as {
-      name: string
-      n: number
-    }[]
-    const out: Record<string, number> = {}
-    for (const r of rows) out[r.name] = r.n
-    return out
-  }
-
-  /** Join the waitlist. Returns false if the address is already on it. */
-  addToWaitlist(email: string, source: string | null): boolean {
-    const res = this.db
-      .prepare(`INSERT OR IGNORE INTO waitlist (email, source, created_at) VALUES (?, ?, ?)`)
-      .run(email, source, CaseStore.nowIso())
-    return Number(res.changes) > 0
-  }
-
-  waitlistSize(): number {
-    const row = this.db.prepare(`SELECT COUNT(*) AS n FROM waitlist`).get() as { n: number }
-    return row.n
-  }
-
-  /**
    * Aggregate view for the operator: how is the product actually used?
+   *
+   * Counts only — no case contents, no identifiers, no addresses.
    */
   stats(): {
     totalCases: number
     withFeedback: number
     feedbackBreakdown: Record<string, number>
     totalCostUsdCents: number
-    eventCounts: Record<string, number>
-    waitlistSize: number
   } {
     const total = this.db.prepare(`SELECT COUNT(*) AS n FROM cases`).get() as { n: number }
     const fb = this.db
@@ -309,8 +339,6 @@ export class CaseStore {
       withFeedback: fb.reduce((sum, r) => sum + r.n, 0),
       feedbackBreakdown: breakdown,
       totalCostUsdCents: cost.c,
-      eventCounts: this.eventCounts(),
-      waitlistSize: this.waitlistSize(),
     }
   }
 
@@ -333,6 +361,7 @@ export class CaseStore {
       costUsdCents: row.cost_usd_cents,
       durationMs: row.duration_ms,
       receipt: JSON.parse(row.receipt_json),
+      audience: (row.audience as Audience) ?? "private",
       feedback: (row.feedback as StoredCase["feedback"]) ?? null,
       feedbackNote: row.feedback_note,
       feedbackAt: row.feedback_at,

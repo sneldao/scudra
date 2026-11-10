@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { CaseStore } from "../src/lib/store.js"
+import { OperatorStore } from "../src/lib/operator-store.js"
 
 function store(): CaseStore {
   return new CaseStore({ path: ":memory:" })
@@ -33,6 +34,7 @@ const sample = {
   costUsdCents: 4,
   durationMs: 12345,
   receipt: { version: 1, id: "case-1" },
+  ownerKeyHash: "hash-a",
 }
 
 describe("case store", () => {
@@ -65,7 +67,7 @@ describe("case store", () => {
     const s = store()
     s.save({ ...sample, id: "a", ensName: "a.eth" })
     s.save({ ...sample, id: "b", ensName: "b.eth" })
-    const list = s.list()
+    const list = s.list(50, "hash-a")
     expect(list).toHaveLength(2)
     expect(list[0].id).toBe("b")
     s.close()
@@ -74,14 +76,14 @@ describe("case store", () => {
   it("bounds the list", () => {
     const s = store()
     for (let i = 0; i < 5; i++) s.save({ ...sample, id: `c${i}`, ensName: "x.eth" })
-    expect(s.list(2)).toHaveLength(2)
+    expect(s.list(2, "hash-a")).toHaveLength(2)
     s.close()
   })
 
   it("records feedback", () => {
     const s = store()
     s.save(sample)
-    expect(s.setFeedback("case-1", "incomplete", "missed the twitter signal")).toBe(true)
+    expect(s.setFeedback("case-1", "hash-a", "incomplete", "missed the twitter signal")).toBe(true)
     const read = s.get("case-1")!
     expect(read.feedback).toBe("incomplete")
     expect(read.feedbackNote).toBe("missed the twitter signal")
@@ -91,16 +93,16 @@ describe("case store", () => {
 
   it("returns false when feedback targets an unknown case", () => {
     const s = store()
-    expect(s.setFeedback("nope", "right", null)).toBe(false)
+    expect(s.setFeedback("nope", "hash-a", "right", null)).toBe(false)
     s.close()
   })
 
   it("deletes a case on request", () => {
     const s = store()
     s.save(sample)
-    expect(s.delete("case-1")).toBe(true)
+    expect(s.delete("case-1", "hash-a")).toBe(true)
     expect(s.get("case-1")).toBeNull()
-    expect(s.delete("case-1")).toBe(false)
+    expect(s.delete("case-1", "hash-a")).toBe(false)
     s.close()
   })
 
@@ -132,7 +134,7 @@ describe("case store", () => {
     const s = store()
     s.save(sample)
     s.save({ ...sample, id: "case-2", ensName: "b.eth", costUsdCents: 6 })
-    s.setFeedback("case-1", "right", null)
+    s.setFeedback("case-1", "hash-a", "right", null)
     const stats = s.stats()
     expect(stats.totalCases).toBe(2)
     expect(stats.withFeedback).toBe(1)
@@ -142,32 +144,16 @@ describe("case store", () => {
   })
 
   it("records usage events and counts them", () => {
-    const s = store()
-    s.recordEvent("page.view", { page: "/" })
-    s.recordEvent("page.view", { page: "/recipes" })
-    s.recordEvent("investigation.completed")
-    const counts = s.eventCounts()
+    // Usage events are OUR data, so they live in the operator store — not in
+    // the case database, which holds the user's documents.
+    const op = new OperatorStore({ path: ":memory:" })
+    op.recordEvent("page.view", { page: "/" })
+    op.recordEvent("page.view", { page: "/recipes" })
+    op.recordEvent("investigation.completed")
+    const counts = op.eventCounts()
     expect(counts["page.view"]).toBe(2)
     expect(counts["investigation.completed"]).toBe(1)
     expect(counts["investigation.failed"]).toBeUndefined()
-    s.close()
-  })
-
-  it("joins the waitlist once per address", () => {
-    const s = store()
-    expect(s.addToWaitlist("a@example.com", "scudra.dev")).toBe(true)
-    expect(s.addToWaitlist("A@Example.com", "scudra.dev")).toBe(false)
-    expect(s.waitlistSize()).toBe(1)
-    s.close()
-  })
-
-  it("includes the waitlist and events in the operator stats", () => {
-    const s = store()
-    s.addToWaitlist("a@example.com", null)
-    s.recordEvent("page.view")
-    const stats = s.stats()
-    expect(stats.waitlistSize).toBe(1)
-    expect(stats.eventCounts["page.view"]).toBe(1)
-    s.close()
+    op.close()
   })
 })

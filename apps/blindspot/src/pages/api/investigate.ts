@@ -9,15 +9,21 @@ import type { APIRoute } from "astro"
 import { investigate, MissingConfigError } from "../../lib/orchestrator.js"
 import { isValidEnsName } from "../../lib/ens.js"
 import { checkRateLimit, releaseSlot } from "../../server/rate-limit.js"
-import { getStore } from "../../server/store-singleton.js"
+import { getCaseStore } from "../../server/store-singleton.js"
+import { requestOwner } from "../../server/request-owner.js"
 import { estimateInvestigationCostUsdCents } from "../../lib/cost.js"
 import type { InvestigationEvent } from "../../lib/events.js"
 
-export const GET: APIRoute = async ({ url, clientAddress }) => {
+export const GET: APIRoute = async ({ url, clientAddress, cookies }) => {
   const ensName = url.searchParams.get("name")
   if (!ensName || !isValidEnsName(ensName)) {
     return jsonResponse({ error: "Provide a valid ENS name, e.g. vitalik.eth" }, 400)
   }
+
+  // The owner key is resolved BEFORE the investigation runs, so the case can
+  // be stamped with it. A first-time visitor gets one issued here, which is
+  // what lets them come back to their own case afterwards.
+  const owner = requestOwner(cookies, url)
 
   // Name the missing key rather than saying "not configured". An operator
   // reading this needs to know WHICH key to add, and "the investigation API
@@ -61,7 +67,8 @@ export const GET: APIRoute = async ({ url, clientAddress }) => {
         await investigate(ensName, {
           outputDir: "reports",
           onEvent: sendEvent,
-          store: getStore(),
+          store: getCaseStore(),
+          ownerKeyHash: owner.hash,
           costUsdCents: estimateInvestigationCostUsdCents(),
         })
       } catch (err) {

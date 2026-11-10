@@ -58,6 +58,7 @@ export default function CaseApp() {
   const [verifying, setVerifying] = useState<null | boolean>(null)
   const [savingFeedback, setSavingFeedback] = useState(false)
   const [degraded, setDegraded] = useState<string | null>(null)
+  const [notYours, setNotYours] = useState<string | null>(null)
 
   const refreshCases = useCallback(async () => {
     try {
@@ -187,6 +188,25 @@ export default function CaseApp() {
     [current, refreshCases],
   )
 
+  /**
+   * Open a case from the list.
+   *
+   * A case that is not ours is reported as missing by the server — and that
+   * is deliberate: "forbidden" would confirm the id is real, which is
+   * information a stranger should not get for free. So the message here is
+   * the same one a stranger gets, and it does not confirm anything.
+   */
+  const openCase = useCallback(async (id: string) => {
+    setNotYours(null)
+    const res = await fetch(`/api/cases/${id}`).catch(() => null)
+    if (!res || !res.ok) {
+      setNotYours("That case could not be opened. It may have been deleted, or it belongs to another browser.")
+      return
+    }
+    const body = await res.json()
+    if (body?.case) setCurrent(body.case)
+  }, [])
+
   return (
     <div className="shell">
       <header className="masthead">
@@ -245,6 +265,12 @@ export default function CaseApp() {
         </p>
       )}
 
+      {notYours && (
+        <p className="warn" role="status">
+          {notYours}
+        </p>
+      )}
+
       {current && (
         <Verdict
           caseData={current}
@@ -270,14 +296,15 @@ export default function CaseApp() {
 
         {storeAvailable && cases.length === 0 && (
           <p className="hint">
-            No cases yet. Run an investigation and it will be here &mdash; with its receipt, ready to export.
+            No cases yet. Run an investigation and it will be here &mdash; with its receipt, ready to export. Cases are
+            tied to this browser, so nobody else can read them.
           </p>
         )}
 
         <ul className="case-list">
           {cases.map((c) => (
             <li key={c.id}>
-              <button type="button" className="case-row" onClick={() => setCurrent(c)}>
+              <button type="button" className="case-row" onClick={() => void openCase(c.id)}>
                 <span className={`score score-${c.riskScore >= 60 ? "high" : c.riskScore >= 30 ? "mid" : "low"}`}>
                   {c.riskScore}
                 </span>
@@ -417,6 +444,12 @@ function Verdict({
           Delete case
         </button>
       </div>
+
+      <p className="hint">
+        The export separates what can be shared from what cannot: the <strong>receipt</strong> is publishable (it is
+        signed, and anyone with the published public key can verify it without trusting us), while the{" "}
+        <strong>findings</strong> are yours to keep or share as you see fit.
+      </p>
 
       {caseData.sources.length > 0 && (
         <div className="sources">

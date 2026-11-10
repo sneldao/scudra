@@ -8,12 +8,15 @@
 
 import { describe, expect, it } from "vitest"
 import { generateKeyPair, verifyReceipt } from "@scudra/evidence"
+import { hashOwnerKey } from "../src/lib/owner.js"
 import { CaseStore } from "../src/lib/store.js"
 import { buildReceipt } from "../src/lib/evidence.js"
 import { estimateInvestigationCostUsdCents } from "../src/lib/cost.js"
 import type { EnsRecord, MobulaData, OffChainContext, RiskAssessment } from "../src/lib/types.js"
 
 const keys = generateKeyPair()
+// The owner whose case this is — a stranger would get nothing.
+const ownerKey = "owner-key-for-this-lifecycle"
 
 const target: EnsRecord = {
   name: "vitalik.eth",
@@ -134,12 +137,13 @@ describe("case lifecycle", () => {
       costUsdCents: cost,
       durationMs: 4200,
       receipt,
+      ownerKeyHash: hashOwnerKey(ownerKey),
     })
     expect(saved.id).toBe("case-lifecycle-1")
     expect(saved.costUsdCents).toBe(cost)
 
     // 3. The user comes back later.
-    const reloaded = store.get("case-lifecycle-1")!
+    const reloaded = store.getForOwner("case-lifecycle-1", hashOwnerKey(ownerKey))!
     expect(reloaded.ensName).toBe("vitalik.eth")
     expect(reloaded.signals).toHaveLength(2)
 
@@ -150,16 +154,18 @@ describe("case lifecycle", () => {
     expect(v.grounded).toBe(true)
 
     // 5. They tell us we were wrong.
-    expect(store.setFeedback("case-lifecycle-1", "incomplete", "missed the twitter signal")).toBe(true)
-    const afterFeedback = store.get("case-lifecycle-1")!
+    expect(
+      store.setFeedback("case-lifecycle-1", hashOwnerKey(ownerKey), "incomplete", "missed the twitter signal"),
+    ).toBe(true)
+    const afterFeedback = store.getForOwner("case-lifecycle-1", hashOwnerKey(ownerKey))!
     expect(afterFeedback.feedback).toBe("incomplete")
     expect(afterFeedback.feedbackNote).toBe("missed the twitter signal")
 
     // 6. They export it, then delete it.
-    expect(store.list()).toHaveLength(1)
-    expect(store.delete("case-lifecycle-1")).toBe(true)
-    expect(store.get("case-lifecycle-1")).toBeNull()
-    expect(store.list()).toHaveLength(0)
+    expect(store.list(50, hashOwnerKey(ownerKey))).toHaveLength(1)
+    expect(store.delete("case-lifecycle-1", hashOwnerKey(ownerKey))).toBe(true)
+    expect(store.getForOwner("case-lifecycle-1", hashOwnerKey(ownerKey))).toBeNull()
+    expect(store.list(50, hashOwnerKey(ownerKey))).toHaveLength(0)
 
     store.close()
   })
@@ -187,8 +193,9 @@ describe("case lifecycle", () => {
       costUsdCents: 0,
       durationMs: 0,
       receipt,
+      ownerKeyHash: hashOwnerKey(ownerKey),
     })
-    const reloaded = store.get("case-2")!
+    const reloaded = store.getForOwner("case-2", hashOwnerKey(ownerKey))!
     // JSON round-tripping must not break the signature — the receipt is
     // verified over its canonical form, not over its serialization.
     expect(verifyReceipt(reloaded.receipt as never).valid).toBe(true)
@@ -218,11 +225,12 @@ describe("case lifecycle", () => {
       costUsdCents: 0,
       durationMs: 0,
       receipt,
+      ownerKeyHash: hashOwnerKey(ownerKey),
     })
     // Someone edits the stored summary. The receipt is untouched — it is a
     // separate, signed document — so the verdict they verify is the one we
     // signed, and the edited summary is visibly not part of it.
-    const edited = store.get("case-3")!
+    const edited = store.getForOwner("case-3", hashOwnerKey(ownerKey))!
     expect(edited.summary).toBe(risk.summary)
     const tampered = { ...(edited.receipt as Record<string, unknown>), claims: { target: "someone-else.eth" } }
     expect(verifyReceipt(tampered as never).valid).toBe(false)

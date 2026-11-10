@@ -18,7 +18,10 @@ export interface BlindspotConfig {
   signingKeyId: string
   privateKeyPem: string
   publicKeyPem: string
-  storePath: string
+  /** The case store — the user's evidence. */
+  caseDbPath: string
+  /** Our own operational data — the waitlist and usage counters. A different file. */
+  operatorDbPath: string
   rawTtlHours: number
 }
 
@@ -31,11 +34,17 @@ function env(name: string): string | undefined {
 
 export function loadConfig(): BlindspotConfig {
   const { privateKeyPem, publicKeyPem } = loadSigningKeys()
+  // The two databases sit beside each other by default, but they are
+  // separate files with separate retention policies — the waitlist is ours
+  // and is kept; the subject's raw material expires.
+  const caseDbPath = env("BLINDSPOT_CASE_DB") ?? env("BLINDSPOT_STORE_PATH") ?? "data/cases.db"
+  const operatorDbPath = env("BLINDSPOT_OPERATOR_DB") ?? "data/operator.db"
   return {
     signingKeyId: keyId(publicKeyPem),
     privateKeyPem,
     publicKeyPem,
-    storePath: env("BLINDSPOT_STORE_PATH") ?? "data/blindspot.db",
+    caseDbPath,
+    operatorDbPath,
     rawTtlHours: Number(env("BLINDSPOT_RAW_TTL_HOURS") ?? 24) || 24,
   }
 }

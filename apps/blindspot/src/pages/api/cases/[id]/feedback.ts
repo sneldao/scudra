@@ -9,14 +9,18 @@
 //
 // The body is { verdict: "wrong" | "incomplete" | "right", note?: string }.
 // The note is optional but it is where the useful information is.
+//
+// OWNER-SCOPED: you can only rate your own investigation.
 
 import type { APIRoute } from "astro"
-import { getStore } from "../../../../server/store-singleton.js"
+import { getCaseStore } from "../../../../server/store-singleton.js"
+import { requestOwner } from "../../../../server/request-owner.js"
 
 const VERDICTS = new Set(["wrong", "incomplete", "right"])
 
-export const POST: APIRoute = async ({ params, request }) => {
-  const store = getStore()
+export const POST: APIRoute = async ({ params, request, url, cookies }) => {
+  const owner = requestOwner(cookies, url)
+  const store = getCaseStore()
   if (!store) return json({ error: "Case storage is unavailable on this server." }, 503)
   const id = params.id
   if (!id) return json({ error: "Missing case id." }, 400)
@@ -34,7 +38,7 @@ export const POST: APIRoute = async ({ params, request }) => {
   }
   const note = typeof body.note === "string" && body.note.trim() ? body.note.trim().slice(0, 2000) : null
 
-  const ok = store.setFeedback(id, verdict as "wrong" | "incomplete" | "right", note)
+  const ok = store.setFeedback(id, owner.hash, verdict as "wrong" | "incomplete" | "right", note)
   if (!ok) return json({ error: "No such case." }, 404)
 
   return json({ saved: true })

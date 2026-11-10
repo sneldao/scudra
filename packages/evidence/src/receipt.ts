@@ -25,6 +25,21 @@ export interface Receipt {
   id: string
   /** What kind of thing this is. */
   kind: string
+  /**
+   * Who this document is for.
+   *
+   * "publishable" — safe to hand to someone who is not the user, because it
+   * is independently checkable. A receipt qualifies: it is signed, and
+   * anyone with the published public key can verify it without trusting us.
+   *
+   * "private" — the user's working file. Not to be published.
+   *
+   * This is a first-class field rather than a convention, because the
+   * material a receipt is derived from is private and the receipt is not.
+   * Mixing those two up is how a finding about a subject ends up published
+   * by accident.
+   */
+  audience: "publishable" | "private"
   /** ISO timestamp of when the underlying work completed. */
   createdAt: string
   /** The public key that signed this receipt, and its short id. */
@@ -46,6 +61,7 @@ export interface ReceiptBody {
   version: 1
   id: string
   kind: string
+  audience: "publishable" | "private"
   createdAt: string
   signedBy: { keyId: string; publicKeyPem: string }
   contentHash: string
@@ -59,6 +75,7 @@ export function receiptBody(r: Receipt): ReceiptBody {
     version: r.version,
     id: r.id,
     kind: r.kind,
+    audience: r.audience,
     createdAt: r.createdAt,
     signedBy: r.signedBy,
     contentHash: r.contentHash,
@@ -72,6 +89,8 @@ export function receiptBody(r: Receipt): ReceiptBody {
 export interface SignReceiptInput {
   id: string
   kind: string
+  /** Defaults to "publishable" — a receipt is meant to be checkable. */
+  audience?: "publishable" | "private"
   createdAt?: string
   claims: unknown
   observations: unknown
@@ -90,6 +109,7 @@ export function signReceipt(input: SignReceiptInput): Receipt {
     version: 1,
     id: input.id,
     kind: input.kind,
+    audience: input.audience ?? "publishable",
     createdAt: input.createdAt ?? new Date().toISOString(),
     signedBy: { keyId: input.keyId, publicKeyPem: input.publicKeyPem },
     claims: input.claims,

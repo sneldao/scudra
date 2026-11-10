@@ -10,14 +10,14 @@
 // GET /api/waitlist — how many people are on it. Counts only, no addresses.
 
 import type { APIRoute } from "astro"
-import { getStore } from "../../server/store-singleton.js"
+import { getOperatorStore } from "../../server/store-singleton.js"
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export const OPTIONS: APIRoute = async () => new Response(null, { status: 204, headers: corsHeaders() })
 
 export const GET: APIRoute = async () => {
-  const store = getStore()
+  const store = getOperatorStore()
   if (!store) return json({ size: 0, available: false })
   return json({ size: store.waitlistSize(), available: true })
 }
@@ -35,7 +35,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   const source = typeof body.source === "string" ? body.source.slice(0, 120) : null
 
-  const store = getStore()
+  const store = getOperatorStore()
   if (!store) return json({ ok: false, error: "Storage is unavailable on this server." }, 503)
 
   try {
