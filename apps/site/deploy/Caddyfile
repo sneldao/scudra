@@ -1,0 +1,50 @@
+# Caddy configuration for the Scudra deployment on Vultr (149.248.9.254).
+#
+# Three hosts, three roles, one box:
+#
+#   scudra.persidian.com                  THE PRODUCT — Blindspot.
+#                                         The front door. The thing people
+#                                         use. Everything else is a lab
+#                                         artifact and is addressed by its own
+#                                         hostname so it can never be
+#                                         mistaken for the product.
+#
+#   analyst.149.248.9.254.sslip.io       The Analyst — a lab artifact.
+#   lab.149.248.9.254.sslip.io           The lab site — static, served from disk.
+#
+# The two sslip.io hosts exist because the domain's DNS is managed in
+# Cloudflare and the wildcard records are not set yet. sslip.io resolves any
+# label to the IP in the name and Let's Encrypt issues for it, so the lab
+# artifacts are reachable today without a DNS change. When the records are
+# added, change these two hostnames and nothing else.
+#
+# flush_interval -1 is required for SSE: the Analyst and Blindspot both
+# stream investigation events over an EventSource, and Caddy's default
+# buffering would hold them until the response ends.
+
+scudra.persidian.com {
+	reverse_proxy 127.0.0.1:4567 {
+		flush_interval -1
+	}
+}
+
+analyst.149.248.9.254.sslip.io {
+	reverse_proxy 127.0.0.1:4570 {
+		flush_interval -1
+	}
+}
+
+lab.149.248.9.254.sslip.io {
+	# The lab site is a static build. Served from disk, with the SPA-style
+	# fallback so a deep link still lands on a page.
+	root * /var/www/scudra-lab
+	encode zstd gzip
+	try_files {path} {path}/ /index.html
+	file_server
+}
+
+149.248.9.254.sslip.io {
+	reverse_proxy 127.0.0.1:4570 {
+		flush_interval -1
+	}
+}

@@ -1,0 +1,26 @@
+[Unit]
+Description=Scudra Blindspot (the product)
+After=network-online.target
+Requires=network-online.target
+
+[Service]
+User=scudra
+WorkingDirectory=/var/lib/scudra/blindspot
+EnvironmentFile=/home/scudra/scudra/apps/blindspot/.env
+Environment=HOST=127.0.0.1 PORT=4567 NODE_ENV=production
+ExecStart=/usr/bin/node /home/scudra/scudra/apps/blindspot/dist/server/entry.mjs
+Restart=on-failure
+RestartSec=3
+
+# The case store and the report output live under /var/lib/scudra/blindspot.
+# ProtectSystem=strict makes the whole filesystem read-only, so that one
+# directory is named as the single writable exception — a case store that
+# lives on the home partition would be lost on redeploy.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+ReadWritePaths=/var/lib/scudra/blindspot
+
+[Install]
+WantedBy=multi-user.target
