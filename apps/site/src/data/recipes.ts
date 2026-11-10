@@ -1,3 +1,5 @@
+import { DEPLOY } from "@scudra/shared"
+
 export interface Recipe {
   slug: string
   title: string
@@ -19,7 +21,7 @@ export const recipes: Recipe[] = [
     primitives: ["browser", "sandbox"],
     status: "live",
     source: "apps/blindspot",
-    demo: "https://blindspot.persidian.com",
+    demo: DEPLOY.product.url,
   },
   {
     slug: "stealth-scraper",
@@ -40,7 +42,7 @@ export const recipes: Recipe[] = [
     primitives: ["sandbox"],
     status: "live",
     source: "apps/analyst",
-    demo: "https://scudra.persidian.com",
+    demo: DEPLOY.analyst.url,
   },
   {
     slug: "desktop-operator",

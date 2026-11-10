@@ -37,9 +37,13 @@ analyst.149.248.9.254.sslip.io {
 lab.149.248.9.254.sslip.io {
 	# The lab site is a static build. Served from disk, with the SPA-style
 	# fallback so a deep link still lands on a page.
+	#
+	# {path}/index.html comes BEFORE {path}/: without it, Caddy matches the
+	# directory first and issues a 308 redirect to the trailing-slash form,
+	# which then 404s. Order matters here.
 	root * /var/www/scudra-lab
 	encode zstd gzip
-	try_files {path} {path}/ /index.html
+	try_files {path} {path}/index.html {path}/ /index.html
 	file_server
 }
 

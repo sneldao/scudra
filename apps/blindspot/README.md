@@ -155,14 +155,17 @@ cd apps/blindspot && node dist/server/entry.mjs
 What a deployment needs:
 
 - `SOLARI_API_KEY` and `MOBULA_API_KEY` — without them the API returns a
-  clear "not configured" message rather than failing silently.
+  clear message naming which one is missing.
 - `BLINDSPOT_STORE_PATH` — where the SQLite file lives. **Put it on a
   persistent volume**; the default is `data/blindspot.db` relative to the
   working directory, and a case store that vanishes on redeploy is a case
   store nobody can come back to.
-- `BLINDSPOT_SIGNING_KEY` — the Ed25519 private key. Without it an ephemeral
-  key is generated at boot: the app works, but receipts cannot be verified by
-  a third party and the key changes on every restart.
+- `BLINDSPOT_SIGNING_KEY_FILE` — a path to the Ed25519 private key PEM.
+  **A file, not an environment variable**: a PEM is multi-line, and systemd's
+  `EnvironmentFile` parser consumes the backslash in a `\n` escape, leaving a
+  bare `n` and an unparseable key. Without it an ephemeral key is generated at
+  boot: the app works, but receipts cannot be verified by a third party and
+  the key changes on every restart.
 - `BLINDSPOT_RAW_TTL_HOURS` — how long the subject's raw material survives.
   Defaults to 24 hours.
 - `BLINDSPOT_OPERATOR_KEY` — if set, `/api/stats` requires it in the
@@ -170,6 +173,11 @@ What a deployment needs:
 
 Put it behind Caddy or nginx for TLS and SSE-safe buffering, and give the
 process a writable data directory.
+
+**Live:** <https://scudra.persidian.com> — the product owns the primary
+domain. The full deployment layout (three hosts, one box, the key-file
+requirement, and how to rotate the key) is in
+[`content/deployment.md`](../../content/deployment.md).
 
 ## Honest limits
 

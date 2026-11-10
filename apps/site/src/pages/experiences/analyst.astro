@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro"
+import { DEPLOY } from "@scudra/shared"
 ---
 
 <Layout
@@ -20,7 +21,7 @@ import Layout from "../../layouts/Layout.astro"
 
     <div class="flex flex-wrap gap-3 mb-12">
       <a
-        href="https://scudra.persidian.com"
+        href={DEPLOY.analyst.url}
         class="sc-button-primary"
       >
         Try the live demo

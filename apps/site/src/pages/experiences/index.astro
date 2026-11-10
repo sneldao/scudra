@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro"
+import { DEPLOY } from "@scudra/shared"
 ---
 
 <Layout title="Experiences — Scudra" description="Interactive cloud agent experiences built by Scudra.">
@@ -22,7 +23,7 @@ import Layout from "../../layouts/Layout.astro"
           Evidence gathering that leaves the investigator invisible. Paste an ENS name, get a signed verdict you can keep — and a 3D dossier for the tour.
         </p>
         <div class="flex flex-wrap gap-3">
-          <a href="https://blindspot.persidian.com" class="sc-button-accent" rel="noreferrer">Open Blindspot</a>
+          <a href={DEPLOY.product.url} class="sc-button-accent" rel="noreferrer">Open Blindspot</a>
           <a href="/experiences/blindspot" class="sc-button-secondary">Read more</a>
           <a href="/recipes/blindspot" class="sc-button-secondary">Read recipe</a>
         </div>
@@ -58,7 +59,7 @@ import Layout from "../../layouts/Layout.astro"
           Blast Radius Zero. An LLM writes code that runs in a locked-down, throwaway container — with self-repair, a containment board, and signed run receipts.
         </p>
         <div class="flex flex-wrap gap-3">
-          <a href="https://scudra.persidian.com" class="sc-button-accent">Open demo</a>
+          <a href={DEPLOY.analyst.url} class="sc-button-accent">Open demo</a>
           <a href="/experiences/analyst" class="sc-button-secondary">About</a>
         </div>
       </article>

@@ -30,8 +30,8 @@ A cloud agent is a program whose body is infrastructure: a browser in Frankfurt,
 
 ## What is here
 
-- **[Blindspot](apps/blindspot)** — the product. Privacy-preserving onchain investigation with signed, checkable evidence. [Live](https://blindspot.persidian.com) · the 3D dossier at `/dossier`.
-- **[The Analyst](apps/analyst)** — _Blast Radius Zero._ An LLM (Vultr Serverless Inference) writes code that runs in a locked-down, throwaway container on a Vultr VM. Real output, self-repair, a one-click "attack the sandbox" containment demo, and verified teardown.
+- **[Blindspot](apps/blindspot)** — the product. Privacy-preserving onchain investigation with signed, checkable evidence. [Live](https://scudra.persidian.com) · the 3D dossier at `/dossier`.
+- **[The Analyst](apps/analyst)** — _Blast Radius Zero._ An LLM (Vultr Serverless Inference) writes code that runs in a locked-down, throwaway container on a Vultr VM. Real output, self-repair, a one-click "attack the sandbox" containment demo, and verified teardown. [Live](https://analyst.149.248.9.254.sslip.io) · [the lab](https://lab.149.248.9.254.sslip.io).
 - **[packages/evidence](packages/evidence)** — the verifiable-output primitives both apps share: canonical encoding, content hashing, asymmetric signing, and answer grounding. A receipt from either experience is checked by the same code.
 - **[The Witness](apps/witness)** · **[The Builder](apps/builder)** — lab artifacts and recipes, not products.
 
@@ -83,6 +83,7 @@ Git hooks (gitleaks secret scan, ruff, tsc) are symlinked by `scripts/install-ho
 
 - [`content/long-term-strategy.md`](content/long-term-strategy.md) — the strategy: one product, one user, one wedge, and the rules we now build by.
 - [`content/postmortem-agent-rush.md`](content/postmortem-agent-rush.md) — why we lost the Agent Rush hackathon, and what we learned.
+- [`content/deployment.md`](content/deployment.md) — how it is deployed: three hosts, one box, and the receipt-key file.
 - [`content/roadmap.md`](content/roadmap.md) — the operating plan.
 
 ## The Cloud Agent Manifesto

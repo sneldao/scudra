@@ -369,10 +369,15 @@ release ships without someone using it and something we learned from them.
 | 1     | Delete — the user's own evidence, their call                                       | **Done**                   |
 | 1     | `@scudra/evidence` shared by both apps (canonical, hashing, signing, grounding)    | **Done**                   |
 | 1     | The Analyst's receipts upgraded from HMAC to Ed25519                               | **Done**                   |
+| 1     | **Blindspot deployed on the primary domain**, the Analyst and lab moved aside      | **Done**                   |
+| 1     | The receipt key read from a FILE, because systemd mangles a PEM in an env var      | **Done**                   |
+| 1     | A degraded investigation when the stealth browser cannot start                     | **Done**                   |
 | 2     | Accounts, scoped API keys, team sharing, MCP                                       | Not started                |
 | 3     | Paid tier, cost control, compliance surface                                        | Not started                |
 | 0     | **Own the stealth-browser primitive** (the Solari free-plan 402)                   | **Open — the big one**     |
 | 3     | Expected-verdict harness with a control group, in CI                               | Open                       |
+| 0     | **`MOBULA_API_KEY`** — the product cannot run an investigation without it          | **Open — blocking**        |
+| —     | **A real pilot user**                                                              | **Open — the biggest one** |
 | —     | **A real pilot user**                                                              | **Open — the biggest one** |
 
 Two of the three hardest items are still open, and neither is a code problem:

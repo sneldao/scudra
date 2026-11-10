@@ -119,14 +119,19 @@ pnpm --filter @scudra/analyst test     # 89 tests: docker flags, fake-docker lif
 
 Verified working configuration (deployed 2026-11):
 
-- **Live demo:** https://scudra.persidian.com — `vc2-1c-1gb` (1 vCPU / 1 GB), Los Angeles, ~$0.01/hr.
+- **Live demo:** https://analyst.149.248.9.254.sslip.io — `vc2-1c-1gb` (1 vCPU / 1 GB), Los Angeles, ~$0.01/hr.
   On 1 GB, set `MAX_CONCURRENT_SANDBOXES=1` — each sandbox is capped at 512 MB.
 - **Demo video:** https://youtu.be/8iDC_EZxAu4 — 2-minute walkthrough with the containment moment (7/7 probes BLOCKED, verified teardown).
 
+The Analyst is a **lab artifact**. The product is Blindspot, and it owns the
+primary domain (`scudra.persidian.com`). Full deployment notes, including
+the three-host layout and the receipt-key-file requirement, are in
+[`content/deployment.md`](../../content/deployment.md).
+
 1. Create a **Cloud Compute** VM (Ubuntu 24.04; `vc2-1c-1gb` is sufficient — 2 vCPU / 4 GB only if you expect concurrent judges).
 2. `scp apps/analyst/deploy/setup-vultr.sh root@VM:` and run it (Docker, Node, pnpm, firewall, `scudra` user). Then copy your SSH key into `/home/scudra/.ssh/authorized_keys` if you want to log in as `scudra`.
-3. As `scudra`: clone, build the sandbox image, create `.env` (`TRUST_PROXY=1`, plus `VULTR_INFERENCE_API_KEY`, `VULTR_INFERENCE_MODEL` and `RECEIPT_SIGNING_KEY`), `pnpm install && pnpm build:analyst`.
-   The receipt signing key is an Ed25519 PEM — generate a pair with the command in `.env.example`. If it is not set, the app generates an **ephemeral** key at boot: the app still works, but those receipts cannot be verified by anyone else, and the key changes on every restart. Set it properly for a real deployment.
+3. As `scudra`: clone, build the sandbox image, create `.env` (`TRUST_PROXY=1`, plus `VULTR_INFERENCE_API_KEY`, `VULTR_INFERENCE_MODEL` and `RECEIPT_SIGNING_KEY_FILE`), `pnpm install && pnpm build:analyst`.
+   **The receipt signing key is a FILE, not an environment variable.** A PEM is multi-line, and systemd's `EnvironmentFile` parser consumes the backslash in a `\n` escape, leaving a bare `n` and an unparseable key — the symptom is an opaque decoder error from inside node's crypto, several layers from the cause. If it is not set, the app generates an **ephemeral** key at boot: the app still works, but those receipts cannot be verified by anyone else and the key changes on every restart, which breaks any receipt a third party has already archived. `--doctor` warns about this.
 4. Gate: `cli --doctor` all ✓, then `cli --probe` 7/7 BLOCKED. Do not go public until both pass.
 5. `deploy/scudra-analyst.service` → systemd; `deploy/Caddyfile` → HTTPS (SSE-safe). No domain? `<ip>.sslip.io` works with Let's Encrypt.
 
