@@ -3,6 +3,7 @@
 
 import { DEFAULT_SPEC, type SandboxSpec } from "./providers/types.js"
 import { generateKeyPair, keyId, publicKeyFromPrivate } from "@scudra/evidence"
+import { readFileSync } from "node:fs"
 
 export interface Config {
   inferenceBaseUrl: string
@@ -67,17 +68,32 @@ export function loadConfig(): Config {
  * the public key alone — an HMAC only proves the record to whoever holds the
  * secret, which is not the point of a receipt.
  *
+ * A KEY FILE is the preferred way to supply the key, and it is not a
+ * preference: a PEM is multi-line, and systemd's EnvironmentFile parser
+ * consumes the backslash in a "\n" escape, leaving a bare "n" and an
+ * unparseable key. That failure surfaces as an opaque decoder error inside a
+ * crypto library, several layers from the cause. A file cannot be mangled
+ * this way.
+ *
  * The private key may be configured on its own; the public key is then
  * derived from it. With neither configured, an ephemeral pair is generated so
  * the app still runs — but those receipts cannot be verified by anyone else,
  * and the UI says so.
- *
- * A PEM in an environment variable arrives with literal "\n" sequences, so
- * those are expanded here.
  */
 function loadSigningKeys(): { privateKey: string; publicKey: string; id: string } {
-  const rawPrivate = env("RECEIPT_SIGNING_KEY") ?? ""
-  const rawPublic = env("RECEIPT_PUBLIC_KEY") ?? ""
+  // 1. A key file — the only form that survives systemd.
+  const keyFile = env("RECEIPT_SIGNING_KEY_FILE")
+  if (keyFile) {
+    const privateKey = readKeyFile(keyFile)
+    const publicFile = env("RECEIPT_PUBLIC_KEY_FILE")
+    const publicKey = publicFile ? readKeyFile(publicFile) : publicKeyFromPrivate(privateKey)
+    return { privateKey, publicKey, id: keyId(publicKey) }
+  }
+
+  // 2. An environment variable, for local development where nothing
+  //    reinterprets the value between the file and the process.
+  const rawPrivate = (env("RECEIPT_SIGNING_KEY") ?? "").replace(/\\n/g, "\n")
+  const rawPublic = (env("RECEIPT_PUBLIC_KEY") ?? "").replace(/\\n/g, "\n")
 
   if (rawPrivate) {
     const privateKey = rawPrivate.replace(/\\n/g, "\n")
@@ -104,6 +120,17 @@ function loadSigningKeys(): { privateKey: string; publicKey: string; id: string 
   }
 }
 
+/** Read a PEM from disk. A missing or unreadable file is fatal, not silent. */
+function readKeyFile(path: string): string {
+  try {
+    const pem = readFileSync(path, "utf-8").trim()
+    if (!pem) throw new Error("file is empty")
+    return pem
+  } catch (err) {
+    throw new Error(`could not read the receipt key file ${path}: ${(err as Error).message}`)
+  }
+}
+
 export function configProblem(c: Config): string | null {
   if (!c.inferenceKey) return "VULTR_INFERENCE_API_KEY is not set."
   if (!c.inferenceModel) return "VULTR_INFERENCE_MODEL is not set."
@@ -119,5 +146,5 @@ export function configProblem(c: Config): string | null {
  * third party has already archived. Worth saying out loud.
  */
 export function signingKeyIsEphemeral(): boolean {
-  return !env("RECEIPT_SIGNING_KEY")
+  return !env("RECEIPT_SIGNING_KEY_FILE") && !env("RECEIPT_SIGNING_KEY")
 }
