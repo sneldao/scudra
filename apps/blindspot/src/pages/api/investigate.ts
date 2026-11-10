@@ -19,11 +19,20 @@ export const GET: APIRoute = async ({ url, clientAddress }) => {
     return jsonResponse({ error: "Provide a valid ENS name, e.g. vitalik.eth" }, 400)
   }
 
-  if (!process.env.SOLARI_API_KEY || !process.env.MOBULA_API_KEY) {
+  // Name the missing key rather than saying "not configured". An operator
+  // reading this needs to know WHICH key to add, and "the investigation API
+  // key" could mean either of two different ones.
+  const missingKeys = [
+    !process.env.SOLARI_API_KEY ? "SOLARI_API_KEY" : null,
+    !process.env.MOBULA_API_KEY ? "MOBULA_API_KEY" : null,
+  ].filter((k): k is string => k !== null)
+  if (missingKeys.length > 0) {
     return eventStream((send) => {
       send({
         type: "error",
-        message: "Blindspot is not configured on this server yet — the investigation API key is missing.",
+        message: `This server is missing ${missingKeys.join(" and ")} — the operator needs to configure ${
+          missingKeys.length === 1 ? "it" : "them"
+        } before investigations can run.`,
       })
     })
   }
@@ -106,11 +115,13 @@ function jsonResponse(body: unknown, status: number): Response {
 // DNS failures, stack details) must not reach it verbatim.
 function userMessage(err: unknown): string {
   if (err instanceof MissingConfigError) {
-    return "Blindspot is not configured on this server yet — the investigation API key is missing."
+    return `This server is missing ${err.missing.join(" and ")} — the operator needs to configure ${
+      err.missing.length === 1 ? "it" : "them"
+    } before investigations can run.`
   }
   const message = err instanceof Error ? err.message : String(err)
   if (/api\s?key/i.test(message)) {
-    return "Blindspot is not configured on this server yet — the investigation API key is missing."
+    return "An upstream provider rejected our credentials — the operator needs to check the configured keys."
   }
   if (/Invalid ENS name/.test(message)) {
     return "That ENS name could not be resolved. Check the spelling and try again."
