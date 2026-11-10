@@ -57,6 +57,7 @@ export default function CaseApp() {
   const [storeAvailable, setStoreAvailable] = useState(true)
   const [verifying, setVerifying] = useState<null | boolean>(null)
   const [savingFeedback, setSavingFeedback] = useState(false)
+  const [degraded, setDegraded] = useState<string | null>(null)
 
   const refreshCases = useCallback(async () => {
     try {
@@ -86,6 +87,7 @@ export default function CaseApp() {
       setErrorText("")
       setCurrent(null)
       setVerifying(null)
+      setDegraded(null)
 
       const es = new EventSource(`/api/investigate?name=${encodeURIComponent(target)}`)
       let closed = false
@@ -100,6 +102,10 @@ export default function CaseApp() {
         if (event.type === "phase") {
           const idx = PHASE_STEPS.findIndex((s) => s.key === event.phase)
           if (idx >= 0) setStep(idx)
+        } else if (event.type === "browser:unavailable") {
+          // The run continues without off-chain context. Say so plainly
+          // rather than pretending the investigation was complete.
+          setDegraded(event.reason)
         } else if (event.type === "error") {
           closed = true
           es.close()
@@ -230,6 +236,12 @@ export default function CaseApp() {
       {phase === "error" && (
         <p className="error" role="alert">
           {errorText}
+        </p>
+      )}
+
+      {degraded && (
+        <p className="warn" role="status">
+          Degraded investigation: {degraded}. The onchain verdict is complete; the off-chain context was not collected.
         </p>
       )}
 

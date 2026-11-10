@@ -22,6 +22,7 @@ import {
   releaseBrowserSession,
   closeBrowserClient,
   downloadRecording,
+  type BrowserHandle,
 } from "./browser.js"
 import { assessRisk } from "./analyzer.js"
 import { generateReport } from "./report.js"
@@ -96,19 +97,32 @@ export async function investigate(ensName: string, opts: InvestigateOptions = {}
   emit({ type: "phase", phase: "resolving", status: "done", detail: target.address })
 
   // 2 + 3. Spin up sandbox and stealth browser concurrently
-  const [sandboxHandle, browserHandle] = await Promise.all([
-    createSandbox(SOLARI_API_KEY!),
-    createStealthBrowser(SOLARI_API_KEY!),
-  ])
-
+  // 2 + 3. Spin up the sandbox and the stealth browser.
+  //
+  // The browser is OPTIONAL. A stealth session needs a paid plan (Solari
+  // returns 402 FeatureRequiresPlan on the free tier), and an investigator
+  // whose off-chain enrichment fails should still get the onchain verdict
+  // rather than an error page. A degraded investigation that says what it
+  // could not do is worth more than a clean one that never ran.
+  const sandboxHandle = await createSandbox(SOLARI_API_KEY!)
   emit({ type: "sandbox:booted", sandboxId: sandboxHandle.id })
   emit({ type: "phase", phase: "sandbox", status: "done", detail: sandboxHandle.id })
 
-  emit({
-    type: "browser:connected",
-    egressIp: "detecting...",
-    proxyCountry: browserHandle.proxy?.country ?? "us",
-  })
+  let browserHandle: BrowserHandle | null = null
+  let browserUnavailableReason: string | null = null
+  try {
+    const handle = await createStealthBrowser(SOLARI_API_KEY!)
+    browserHandle = handle
+    emit({
+      type: "browser:connected",
+      egressIp: "detecting...",
+      proxyCountry: handle.proxy?.country ?? "us",
+    })
+  } catch (err) {
+    browserUnavailableReason = describeBrowserFailure(err)
+    console.error(`  [browser] unavailable: ${browserUnavailableReason}`)
+    emit({ type: "browser:unavailable", reason: browserUnavailableReason })
+  }
 
   let onchain: MobulaData | undefined
   let offChain: OffChainContext[] = []
@@ -117,9 +131,13 @@ export async function investigate(ensName: string, opts: InvestigateOptions = {}
     emit({ type: "phase", phase: "onchain", status: "working" })
     emit({ type: "phase", phase: "offchain", status: "working" })
 
+    const offChainPromise = browserHandle
+      ? enrichOffChain(browserHandle, target)
+      : Promise.resolve<OffChainContext[]>([])
+
     ;[onchain, offChain] = await Promise.all([
       fetchOnchainData(sandboxHandle.sandbox, target.address, MOBULA_API_KEY!),
-      enrichOffChain(browserHandle, target),
+      offChainPromise,
     ])
 
     emit({
@@ -140,7 +158,7 @@ export async function investigate(ensName: string, opts: InvestigateOptions = {}
       emit({
         type: "browser:connected",
         egressIp: offChain[0].egressIp,
-        proxyCountry: browserHandle.proxy?.country ?? "us",
+        proxyCountry: browserHandle?.proxy?.country ?? "us",
       })
     }
     emit({ type: "offchain:data", sourceCount: offChain.length })
@@ -154,16 +172,18 @@ export async function investigate(ensName: string, opts: InvestigateOptions = {}
     // 6. Tear down — always, even on error. Teardown failures are logged but
     // never mask the pipeline error that caused them.
     await quietly("sandbox kill", () => destroySandbox(sandboxHandle))
-    if (onchain === undefined) {
-      // The pipeline failed — no recording to fetch, so release the session
-      // and close the client right away.
-      await quietly("browser release", () => releaseBrowserSession(browserHandle))
-      await quietly("browser close", () => closeBrowserClient(browserHandle))
-    } else {
-      // Success path: release the session but KEEP the client open — the
-      // replay uploads asynchronously after release and downloadRecording
-      // below needs the client. closeBrowserClient runs once reporting ends.
-      await quietly("browser release", () => releaseBrowserSession(browserHandle))
+    if (browserHandle) {
+      if (onchain === undefined) {
+        // The pipeline failed — no recording to fetch, so release the session
+        // and close the client right away.
+        await quietly("browser release", () => releaseBrowserSession(browserHandle))
+        await quietly("browser close", () => closeBrowserClient(browserHandle))
+      } else {
+        // Success path: release the session but KEEP the client open — the
+        // replay uploads asynchronously after release and downloadRecording
+        // below needs the client. closeBrowserClient runs once reporting ends.
+        await quietly("browser release", () => releaseBrowserSession(browserHandle))
+      }
     }
   }
 
@@ -176,7 +196,7 @@ export async function investigate(ensName: string, opts: InvestigateOptions = {}
 
     // Download session recording — while the client is still open. This used
     // to run after the client was closed, so the download always failed.
-    const recording = await downloadRecording(browserHandle)
+    const recording = browserHandle ? await downloadRecording(browserHandle) : { sessionId: "none", available: false }
 
     // Build privacy manifest
     const privacy: PrivacyManifest = {
@@ -195,12 +215,14 @@ export async function investigate(ensName: string, opts: InvestigateOptions = {}
       ],
       mechanisms: [
         `Ephemeral Solari sandbox (${sandboxHandle.id}) — killed after investigation, no state persists`,
-        `Stealth browser with residential proxy (${browserHandle.proxy?.country ?? "us"}) — fingerprint masked, IP rotated`,
+        browserHandle
+          ? `Stealth browser with residential proxy (${browserHandle.proxy?.country ?? "us"}) — fingerprint masked, IP rotated`
+          : `Stealth browser UNAVAILABLE (${browserUnavailableReason}) — off-chain context was NOT collected`,
         `ENS as discovery layer — investigator queries by name, not by linking address to identity`,
         `Session recording opt-in only — replay available for audit, not stored by default`,
       ],
       sandboxId: sandboxHandle.id,
-      browserSessionId: browserHandle.sessionId,
+      browserSessionId: browserHandle?.sessionId ?? "none",
       egressIp: offChain[0]?.egressIp ?? "unknown",
       sandboxDestroyed: true,
       recordingAvailable: recording.available,
@@ -282,7 +304,9 @@ export async function investigate(ensName: string, opts: InvestigateOptions = {}
     return reportPath
   } finally {
     // Last act, success or failure: drop the client so the process can exit.
-    await quietly("browser close", () => closeBrowserClient(browserHandle))
+    if (browserHandle) {
+      await quietly("browser close", () => closeBrowserClient(browserHandle))
+    }
   }
 }
 
@@ -292,4 +316,23 @@ async function quietly(label: string, fn: () => Promise<void>): Promise<void> {
   } catch (err) {
     console.error(`  [orchestrator] teardown ${label} failed: ${(err as Error).message}`)
   }
+}
+
+/**
+ * A plain-language reason the stealth browser could not start.
+ *
+ * The common case is a plan that does not include stealth sessions — Solari
+ * answers 402 FeatureRequiresPlan on the free tier. That is a BILLING
+ * condition, not a bug, and an investigator deserves to be told which it is.
+ */
+export function describeBrowserFailure(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err)
+  if (/402|FeatureRequiresPlan|plan/i.test(raw)) {
+    return "the stealth browser needs a paid Solari plan (402 FeatureRequiresPlan)"
+  }
+  if (/api\s?key|unauthorized|401|403/i.test(raw)) return "the browser service rejected our credentials"
+  if (/ENOTFOUND|ECONNREFUSED|ETIMEDOUT|network|fetch failed/i.test(raw)) {
+    return "the browser service could not be reached"
+  }
+  return raw.slice(0, 160)
 }

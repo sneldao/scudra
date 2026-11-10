@@ -25,6 +25,8 @@ export type InvestigationEvent =
     }
   | { type: "sandbox:booted"; sandboxId: string }
   | { type: "browser:connected"; egressIp: string; proxyCountry: string }
+  /** The stealth browser could not start — the run continues without off-chain context. */
+  | { type: "browser:unavailable"; reason: string }
   | { type: "mobula:data"; totalValueUSD: number; assetCount: number; realizedPnlUSD: number }
   | { type: "offchain:data"; sourceCount: number }
   | { type: "analyzing" }
