@@ -25,12 +25,22 @@
 scudra.persidian.com {
 	reverse_proxy 127.0.0.1:4567 {
 		flush_interval -1
+		# The upstream connection is plain http, so Astro would see
+		# http://scudra.persidian.com and reject the browser's real
+		# https:// origin as cross-site — which made the DELETE endpoint
+		# unreachable. Astro only honours the forwarded protocol when
+		# security.allowedDomains is configured in the app; this header is
+		# what it then reads.
+		header_up X-Forwarded-Proto https
+		header_up X-Forwarded-Host {host}
 	}
 }
 
 analyst.149.248.9.254.sslip.io {
 	reverse_proxy 127.0.0.1:4570 {
 		flush_interval -1
+		header_up X-Forwarded-Proto https
+		header_up X-Forwarded-Host {host}
 	}
 }
 
