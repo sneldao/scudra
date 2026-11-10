@@ -112,7 +112,7 @@ pnpm dev:analyst
 
 # headless
 pnpm --filter @scudra/analyst cli --csv data.csv "average salary per department"
-pnpm --filter @scudra/analyst test     # 88 tests: docker flags, fake-docker lifecycle, llm retries, grounding, verifier, reducer
+pnpm --filter @scudra/analyst test     # 89 tests: docker flags, fake-docker lifecycle, llm retries, grounding, verifier, reducer
 ```
 
 ## Deploy on Vultr
@@ -125,7 +125,8 @@ Verified working configuration (deployed 2026-11):
 
 1. Create a **Cloud Compute** VM (Ubuntu 24.04; `vc2-1c-1gb` is sufficient — 2 vCPU / 4 GB only if you expect concurrent judges).
 2. `scp apps/analyst/deploy/setup-vultr.sh root@VM:` and run it (Docker, Node, pnpm, firewall, `scudra` user). Then copy your SSH key into `/home/scudra/.ssh/authorized_keys` if you want to log in as `scudra`.
-3. As `scudra`: clone, build the sandbox image, create `.env` (`TRUST_PROXY=1`), `pnpm install && pnpm build:analyst`.
+3. As `scudra`: clone, build the sandbox image, create `.env` (`TRUST_PROXY=1`, plus `VULTR_INFERENCE_API_KEY`, `VULTR_INFERENCE_MODEL` and `RECEIPT_SIGNING_KEY`), `pnpm install && pnpm build:analyst`.
+   The receipt signing key is an Ed25519 PEM — generate a pair with the command in `.env.example`. If it is not set, the app generates an **ephemeral** key at boot: the app still works, but those receipts cannot be verified by anyone else, and the key changes on every restart. Set it properly for a real deployment.
 4. Gate: `cli --doctor` all ✓, then `cli --probe` 7/7 BLOCKED. Do not go public until both pass.
 5. `deploy/scudra-analyst.service` → systemd; `deploy/Caddyfile` → HTTPS (SSE-safe). No domain? `<ip>.sslip.io` works with Let's Encrypt.
 

@@ -1,50 +1,63 @@
 ---
+import { readFileSync } from "node:fs"
+import { marked } from "marked"
 import Layout from "../layouts/Layout.astro"
+
+// The manifesto source lives in content/manifesto.md at the repo root — the
+// same file the README links to. Rendering it here means the page and the
+// document can never drift apart, which they did, for a while. The leading
+// H1 is stripped: the page header below already carries the title.
+
+// The path is resolved against import.meta.url, which at build time points
+// into apps/site/dist/ — five levels up is the repo root. Same depth the
+// recipe pages use.
+const mdPath = new URL("../../../../../content/manifesto.md", import.meta.url)
+let markdown = ""
+try {
+  markdown = readFileSync(mdPath, "utf-8")
+} catch (err) {
+  // Loud, not silent: a page that renders empty because a path broke looks
+  // like a page that has nothing to say.
+  console.warn(`[manifesto] could not read ${mdPath.pathname}: ${(err as Error).message}`)
+}
+const manifestoHtml = marked.parse(
+  markdown.replace(/^#\s+[^\n]*\n/, "").trimStart(),
+  { async: false },
+)
 ---
 
 <Layout title="Manifesto — Scudra" description="Why cloud-native agents are the next shift in software.">
-  <article class="sc-container py-20 max-w-prose">
-    <p class="text-xs uppercase tracking-[0.12em] text-ink-muted mb-4" data-reveal>
+  <article class="sc-container py-20 max-w-prose" data-reveal>
+    <p class="text-xs uppercase tracking-[0.12em] text-ink-muted mb-4">
       Manifesto
     </p>
-    <h1 class="font-serif text-[clamp(2.25rem,5vw,3.5rem)] leading-[1.1] tracking-tight mb-8" data-reveal>
+    <h1 class="font-serif text-[clamp(2.25rem,5vw,3.5rem)] leading-[1.1] tracking-tight mb-8">
       The next shift in software is not bigger models. It is smaller, cloud-native agents.
     </h1>
 
-    <div class="flex flex-col gap-6 text-ink-muted leading-[1.7] text-[1.05rem]" data-reveal>
-      <p>
-        For decades, we ran software on our own machines. Then we rented servers in the cloud. Then we moved to functions and containers. Each shift made compute more abstract, more elastic, more ephemeral.
-      </p>
-      <p>
-        Now we are entering the agent era. Agents browse the web, run code, operate desktops, and make decisions. But the best agents are not the ones that run on your laptop. They are the ones that spawn in the cloud, act from a residential proxy, and vanish when the task is done.
-      </p>
-      <p>
-        A cloud-native agent is a program whose body is infrastructure. It can be a browser in Frankfurt, a sandbox in Iowa, or a desktop in Singapore. It starts with an API call and leaves no persistent state behind. It is the right shape for a world where trust is scarce and attention is expensive.
-      </p>
+    {manifestoHtml && (
+      <div class="manifesto-doc" set:html={manifestoHtml} />
+    )}
 
-      <h2 class="font-serif text-3xl text-ink mt-6" data-reveal>The primitives</h2>
-      <p data-reveal>
-        Every cloud agent is built from three primitives: a browser, a sandbox, and a desktop. The browser sees the public web. The sandbox runs code safely. The desktop manipulates interfaces built for humans. Together they cover almost every automated task a person can do online.
-      </p>
-      <p data-reveal>
-        Solari is the platform that makes these primitives one API. Scudra is the lab that shows what they can do.
-      </p>
-
-      <h2 class="font-serif text-3xl text-ink mt-6" data-reveal>Why ephemerality matters</h2>
-      <p data-reveal>
-        An agent that persists is an agent that can be profiled. Its IP becomes reputation. Its browser fingerprint becomes identity. Its storage becomes liability. Ephemerality is not just a security feature; it is a design principle.
-      </p>
-      <p data-reveal>
-        When an agent is born, acts, and dies in the same request, the investigation leaves with it. This changes what is possible: competitive research without retaliation, sensitive data without custody, automated operations without attribution.
-      </p>
-
-      <h2 class="font-serif text-3xl text-ink mt-6" data-reveal>What Scudra is building</h2>
-      <p data-reveal>
-        Scudra is a living cookbook. Every recipe is a real, runnable agent. Every experience is a demonstration of what cloud agents can do. Every essay argues for a world where software is no longer bound to a single machine.
-      </p>
-      <p data-reveal>
-        We are not trying to replace developers. We are trying to give them a new primitive: the agent as a first-class building block of the internet.
-      </p>
+    <div class="flex flex-wrap gap-3 mt-12">
+      <a href="/" class="sc-button-accent">Read the product</a>
+      <a href="/recipes" class="sc-button-secondary">Browse the recipes</a>
     </div>
   </article>
 </Layout>
+
+<!-- set:html content is first-party repo markdown; the selectors must be
+     global because injected HTML carries no Astro scope attribute. -->
+<style is:global>
+  .manifesto-doc { font-size: 1.05rem; }
+  .manifesto-doc h2 { font-family: var(--sc-font-serif, Georgia, serif); font-size: 1.6rem; margin: 2.5rem 0 0.75rem; letter-spacing: -0.01em; color: var(--sc-ink); }
+  .manifesto-doc h3 { font-family: var(--sc-font-serif, Georgia, serif); font-size: 1.2rem; margin: 1.75rem 0 0.5rem; color: var(--sc-ink); }
+  .manifesto-doc p, .manifesto-doc li { color: var(--sc-ink-muted); line-height: 1.7; }
+  .manifesto-doc p { margin: 0.9rem 0; }
+  .manifesto-doc ul, .manifesto-doc ol { margin: 0.75rem 0 0.75rem 1.5rem; list-style: revert; }
+  .manifesto-doc li { margin: 0.35rem 0; }
+  .manifesto-doc strong { color: var(--sc-ink); font-weight: 600; }
+  .manifesto-doc em { font-style: italic; }
+  .manifesto-doc blockquote { border-left: 3px solid var(--sc-accent); padding-left: 1rem; margin: 1rem 0; color: var(--sc-ink); }
+  .manifesto-doc code { font-family: var(--sc-font-mono, monospace); font-size: 0.875em; background: rgb(0 0 0 / 0.05); padding: 0.15em 0.4em; border-radius: 4px; }
+</style>

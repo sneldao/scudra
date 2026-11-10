@@ -109,3 +109,15 @@ export function configProblem(c: Config): string | null {
   if (!c.inferenceModel) return "VULTR_INFERENCE_MODEL is not set."
   return null
 }
+
+/**
+ * True when the receipt key was generated at boot rather than configured.
+ *
+ * This is not fatal — the app works and receipts verify against the
+ * generated public key — but those receipts cannot be verified by ANYONE
+ * else, and the key changes on every restart, which breaks any receipt a
+ * third party has already archived. Worth saying out loud.
+ */
+export function signingKeyIsEphemeral(): boolean {
+  return !env("RECEIPT_SIGNING_KEY")
+}

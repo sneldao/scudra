@@ -23,8 +23,10 @@ const mdPath = new URL(`../../../../../content/recipes/${slug}.md`, import.meta.
 let markdown = ""
 try {
   markdown = readFileSync(mdPath, "utf-8")
-} catch {
-  // Missing source file — the metadata above still renders.
+} catch (err) {
+  // Loud, not silent: a page that renders empty because a path broke looks
+  // like a page that has nothing to say.
+  console.warn(`[recipe:${slug}] could not read ${mdPath.pathname}: ${(err as Error).message}`)
 }
 const recipeHtml = marked.parse(
   markdown.replace(/^#\s+[^\n]*\n/, "").trimStart(),

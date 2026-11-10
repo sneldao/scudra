@@ -14,7 +14,7 @@ Uses a cloud browser with a residential proxy to scrape pages from different egr
 
 ## Why it matters
 
-Some sites serve different content to different locations, or block datacenter IPs. A witness agent that can appear from anywhere is a fairer way to inspect the public web. The essay thesis: *the web is not one web — what geo-fencing means for agents.*
+Some sites serve different content to different locations, or block datacenter IPs. A witness agent that can appear from anywhere is a fairer way to inspect the public web. The essay thesis: _the web is not one web — what geo-fencing means for agents._
 
 ## Solari foundation
 
@@ -22,6 +22,13 @@ Some sites serve different content to different locations, or block datacenter I
 
 ## Status
 
-**In build.** The experience app is scaffolded at [`apps/witness`](../../apps/witness) —
-CLI and web UI both work with a `SOLARI_API_KEY`; geo-diff engine and SSRF
-guard are unit-tested. See [`content/roadmap.md`](../roadmap.md).
+**Code-complete, blocked, and parked as a lab artifact.** The experience app
+is at [`apps/witness`](../../apps/witness) — CLI and web UI both work with a
+`SOLARI_API_KEY`; the geo-diff engine and SSRF guard are unit-tested (15
+tests). It cannot run live on the free Solari plan: stealth mode returns 402
+`FeatureRequiresPlan`.
+
+That is the same gate that blocks Blindspot's off-chain half, and the reason
+**owning the browser primitive** is the top open item in
+[`content/long-term-strategy.md`](../long-term-strategy.md). The Witness is a
+great essay with a demo; it is not a business. It stays in the lab.

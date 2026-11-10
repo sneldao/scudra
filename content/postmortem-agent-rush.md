@@ -6,6 +6,13 @@
 **Outcome:** Submitted; did not place in the top 3.
 **Post-mortem written:** 2026-11-10, by the build team.
 
+> **Update (later the same day).** Two of the findings below were acted on
+> immediately and are no longer true of the code: the receipts are now signed
+> with **Ed25519** with the public key published (see "What we got right"
+> below and `packages/evidence`), and the grounding check no longer scales
+> every number by 100. This document is otherwise left as written, because a
+> post-mortem that quietly edits its own conclusions is not a post-mortem.
+
 ---
 
 ## 1. What actually happened
@@ -157,11 +164,15 @@ re-framed, not discarded.
 - **The provider seam** (`src/lib/providers/types.ts`: create-with-limits →
   exec → idempotent verifiable destroy) is genuinely well-factored, and it is
   the exact seam needed to swap Docker for gVisor or a throwaway Vultr VM.
-  That is our fastest path to fixing RC2.
+  That is our fastest path to fixing RC2. _(Update: this seam now lives in
+  `packages/evidence` and `packages/sandbox`-shaped code, shared with
+  Blindspot.)_
 - **Verified teardown + orphan reaping + `finally`-on-every-path** is more
   rigorous than most. Airlock has it too; we should have leaned on it.
 - **HMAC-signed receipts with a forge-it-and-fail demo** is a good touch that
-  no winner has.
+  no winner has. _(Update: the HMAC was the weakest part of it — it proved the
+  record only to whoever held the secret. Now Ed25519, with the public key
+  published, so a third party can check a receipt without a secret at all.)_
 - **The grounding check** (every number in the prose must appear in real
   stdout; figures that don't are flagged) is exactly the deterministic
   principle both #1 and #2 made their headline — we just didn't make it ours.

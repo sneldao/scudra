@@ -3,6 +3,12 @@ version: 3
 name: Blindspot
 description: Privacy-preserving onchain investigation agent. A 3D dossier you scroll through.
 product_thesis: "Open a dossier. See everything. Leave no trace."
+# NOTE: this document specifies the DOSSIER, which now lives at /dossier.
+# The product surface — one field, one button, one result, plus the case
+# store, the signed receipt, the feedback loop and the export — is at / and
+# is specified in apps/blindspot/README.md and the styles in
+# src/pages/index.astro. The dossier is the lab's language; the report is the
+# product's. See content/long-term-strategy.md.
 engine: three.js
 scroll: lenis
 animation: proximity-driven redaction shader (scroll-driven, no tween library)

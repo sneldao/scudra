@@ -6,7 +6,7 @@
 //   SCUDRA_MOCK=1 ... works with no Docker and no key.
 import { readFileSync } from "node:fs"
 import { buildDeps, buildProbeDeps } from "../lib/deps.js"
-import { configProblem, loadConfig } from "../lib/config.js"
+import { configProblem, loadConfig, signingKeyIsEphemeral } from "../lib/config.js"
 import type { AnalystEvent } from "../lib/events.js"
 import { runContainmentProbe, runTask } from "../lib/orchestrator.js"
 import { getProvider } from "../lib/providers/index.js"
@@ -67,8 +67,16 @@ if (doctor) {
   const config = loadConfig()
   const checks = await getProvider(config.provider).health(config.spec)
   const problem = process.env.SCUDRA_MOCK === "1" ? null : configProblem(config)
-  checks.push({ name: "Config", ok: !problem, detail: problem ?? "inference key, model, receipt secret set" })
+  checks.push({ name: "Config", ok: !problem, detail: problem ?? "inference key and model set" })
   for (const c of checks) console.log(`${c.ok ? "✓" : "✗"} ${c.name}: ${c.detail}`)
+  // The receipt key is a warning, not a gate: an ephemeral key still signs
+  // and still verifies — but only against a public key that changes on every
+  // restart, which no third party can rely on.
+  if (signingKeyIsEphemeral()) {
+    console.log("! Receipt key: EPHEMERAL — set RECEIPT_SIGNING_KEY so receipts are verifiable by a third party")
+  } else {
+    console.log(`✓ Receipt key: ${config.receiptKeyId} (Ed25519, public key published)`)
+  }
   process.exit(checks.every((c) => c.ok) ? 0 : 1)
 } else if (probe) {
   await runContainmentProbe(buildProbeDeps().deps, print)

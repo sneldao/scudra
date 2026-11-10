@@ -26,14 +26,28 @@ An agent that persists is an agent that can be profiled. Its IP becomes reputati
 
 When an agent is born, acts, and dies in the same request, the investigation leaves with it. This changes what is possible: competitive research without retaliation, sensitive data without custody, automated operations without attribution.
 
+### The refinement: whose persistence?
+
+We got this half right for a long time, and building a real product forced the correction.
+
+Ephemerality is a claim about **the operator**. The infrastructure that acts on someone's behalf must leave no trace — no IP, no fingerprint, no log, no correlation between this task and the next. That is the whole thesis, and it is not negotiable.
+
+It is **not** a claim about the user's own conclusions. An investigator who assembles a subject's footprint needs to keep it, hand it to someone, and have it checkable long after the sandbox that gathered it has been destroyed. "No trace" must mean _no trace on the target_, not _no record for the user_.
+
+Getting this backwards in either direction is fatal. Keep everything and you are a surveillance archive; keep nothing and you are a demo. The line runs between what was learned **about a subject** and what the investigator **concluded from it**.
+
+That distinction — and a signed, independently checkable record of the conclusion — is what the product is built on.
+
 ## Solari and Scudra
 
 Solari is the platform that makes these primitives one API.
 
-Scudra is the lab that shows what they can do.
+Scudra is the lab that shows what they can do — and, underneath the lab, the product that proves it.
 
 ## What we are building
 
-Scudra is a living cookbook. Every recipe is a real, runnable agent. Every experience is a demonstration of what cloud agents can do. Every essay argues for a world where software is no longer bound to a single machine.
+Scudra is a living cookbook: every recipe is a real, runnable agent, every experience is a demonstration of what cloud agents can do, every essay argues for a world where software is no longer bound to a single machine.
+
+Underneath the cookbook there is one product. **Blindspot**: evidence gathering that leaves the investigator invisible, delivered as a signed record anyone can check.
 
 We are not trying to replace developers. We are trying to give them a new primitive: the agent as a first-class building block of the internet.

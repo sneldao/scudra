@@ -52,7 +52,7 @@ import Layout from "../../layouts/Layout.astro"
         <li><strong>Bounded self-repair.</strong> The agent loop retries failed code a limited number of times, then gives up cleanly.</li>
         <li><strong>Blast Radius Zero.</strong> A seven-probe containment board lets you attack the sandbox and watch every escape attempt fail.</li>
         <li><strong>Verified answers.</strong> A second model judges whether the output actually answers the task — and the verdict is signed into the receipt.</li>
-        <li><strong>Signed receipts.</strong> Every run produces an HMAC-signed receipt you can verify — or try to forge.</li>
+        <li><strong>Signed receipts.</strong> Every run produces an Ed25519-signed receipt — the public key is published, so anyone can verify it, or try to forge it.</li>
       </ul>
     </div>
   </article>

@@ -134,15 +134,17 @@ discriminates. That is the difference between "contains attacks" and
   baseline (password-in-browser 15/15 leaked vs Errand 0/15) is the model.
 - **Run it in CI.** Fail the build on a regression.
 
-### 2.4 Make receipts checkable by a third party
+### 2.4 Make receipts checkable by a third party — **done**
 
-Our HMAC is honest but weak: tamper-evident for whoever holds the key, not
+Our HMAC was honest but weak: tamper-evident for whoever holds the key, not
 third-party attestation. We said so ourselves — and then left it there.
 
-- Move to **asymmetric signing** (Ed25519), with the public key published.
-- Add a **public verification endpoint/page**: paste a receipt, get a verdict.
-  A judge can check our output without trusting us.
+- **Asymmetric signing (Ed25519), with the public key published.** _(Done —
+  both apps, and the primitives live in `packages/evidence`.)_
+- **A public verification endpoint**: paste a receipt, get a verdict. No
+  secret, no account. _(Done — `POST /api/verify` in both apps.)_
 - **Keep the forge-it-and-fail demo.** It's ours alone; nobody else had it.
+  _(Kept — and Blindspot has the same thing, on the product surface.)_
 
 ### 2.5 Add an egress proxy
 

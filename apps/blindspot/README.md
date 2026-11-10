@@ -138,6 +138,39 @@ key is generated, which works but cannot be verified by a third party.
 | `POST /api/analytics`           | First-party usage events                      |
 | `GET /api/stats`                | The operator's view of how it is being used   |
 
+`DELETE` is protected by Astro's origin check: a same-origin request works, a
+cross-site one is refused. The `POST` endpoints take JSON and are CORS-open so
+the site can post to them.
+
+## Deploy
+
+The app is an Astro SSR build with a Node adapter — there is no Vite-only
+output to host, just a server.
+
+```bash
+pnpm --filter @scudra/blindspot build
+cd apps/blindspot && node dist/server/entry.mjs
+```
+
+What a deployment needs:
+
+- `SOLARI_API_KEY` and `MOBULA_API_KEY` — without them the API returns a
+  clear "not configured" message rather than failing silently.
+- `BLINDSPOT_STORE_PATH` — where the SQLite file lives. **Put it on a
+  persistent volume**; the default is `data/blindspot.db` relative to the
+  working directory, and a case store that vanishes on redeploy is a case
+  store nobody can come back to.
+- `BLINDSPOT_SIGNING_KEY` — the Ed25519 private key. Without it an ephemeral
+  key is generated at boot: the app works, but receipts cannot be verified by
+  a third party and the key changes on every restart.
+- `BLINDSPOT_RAW_TTL_HOURS` — how long the subject's raw material survives.
+  Defaults to 24 hours.
+- `BLINDSPOT_OPERATOR_KEY` — if set, `/api/stats` requires it in the
+  `x-operator-key` header.
+
+Put it behind Caddy or nginx for TLS and SSE-safe buffering, and give the
+process a writable data directory.
+
 ## Honest limits
 
 - The risk assessment is **deterministic rules, not a model**. It is
