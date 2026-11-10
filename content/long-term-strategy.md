@@ -387,3 +387,10 @@ release ships without someone using it and something we learned from them.
 Two of the three hardest items are still open, and neither is a code problem:
 finding a pilot user, and deciding whether to pay a third party for the stealth
 browser or own it.
+
+> **Operational notes live in a private repo.** The facts about the live box —
+> which host, what it costs, where the keys are, what is broken right now —
+> are in [`sneldao/scudra-internal`](https://github.com/sneldao/scudra-internal),
+> which is private. This repo carries the shape and the reasons; the split is
+> deliberate, because git history is permanent and forkable, so anything
+> removed from a public repo later was public all along.
