@@ -13,12 +13,12 @@ Built for the **Vultr: Agent Rush** hackathon — Challenge 1, _Blast Radius Zer
 
 1. **Pick data** — three built-in datasets, a CSV upload (checked before it leaves the browser), or no data at all.
 2. **Ask** — a question, or one of the suggested prompts. ⌘↵ runs it.
-3. **Watch the pipeline** — Boot → Write → Run → Explain → Destroy. If the code fails, the rail loops back to Write and says *self-repairing*.
+3. **Watch the pipeline** — Boot → Write → Run → Explain → Destroy. If the code fails, the rail loops back to Write and says _self-repairing_.
 4. **The machine panel** stays on screen the whole time: age, hard limits, and a verdict that says **Contained** only when teardown was verified and nothing escaped.
 5. **The answer** — large type, chart underneath with its sha256, a verifier line (a second model judges whether the output actually answers the task), and a grounding line: every number in the prose is checked against the real stdout. Figures that don't appear are flagged.
 6. **Cancel** — stops the stream; the server destroys the sandbox in a `finally`. The UI does not claim "contained" until a verified teardown comes back.
 7. **Attack the sandbox** — seven hostile programs, no model required. A BLOCKED stamp and the real error for each.
-8. **Receipt** — hashes + HMAC. *Forge it & verify* edits a field and shows the signature fail.
+8. **Receipt** — hashes + Ed25519. _Forge it & verify_ edits a field and shows the signature fail.
 
 Keyboard, contrast (WCAG AA), landmarks and reduced motion are checked with axe in CI-style browser runs. Mock mode (`pnpm dev:analyst:mock`) runs the entire product with a scripted model and sandbox.
 
@@ -75,10 +75,17 @@ pass.
 
 Every run ends with a receipt: sandbox id, image, model, limits, timestamps,
 whether destruction was verified, attempts, exit code, and SHA-256 of the code,
-stdout, dataset and every artifact — signed with an HMAC held only on the
-control plane. `POST /api/verify` re-checks it; the UI's _Forge it & verify_
-button edits a field and shows verification fail. (HMAC proves the record is
-ours and unmodified; it is not third-party attestation — see Honest limits.)
+stdout, dataset and every artifact — signed with **Ed25519**. `POST /api/verify`
+re-checks it; the UI's _Forge it & verify_ button edits a field and shows
+verification fail.
+
+The signature is asymmetric on purpose. An HMAC proves the record only to
+whoever holds the shared secret, which is worthless to a third party. With
+Ed25519 the **public key is published** at `GET /api/verify`, so anyone can
+verify a receipt — a journalist, a bounty board, a regulator — without a
+secret and without trusting this server. The signing primitives are shared
+with Blindspot through `@scudra/evidence`, so a receipt from either
+experience is checked by the same code.
 
 ### The containment moment: "Attack the sandbox ⚡"
 
@@ -98,7 +105,7 @@ pnpm dev:analyst:mock                             # http://localhost:4570
 
 # 2. Real, on a machine with Docker (the Vultr VM)
 docker build -t scudra-sandbox:latest apps/analyst/sandbox
-cp apps/analyst/.env.example apps/analyst/.env    # key, model, RECEIPT_SECRET
+cp apps/analyst/.env.example apps/analyst/.env    # key, model, RECEIPT_SIGNING_KEY
 pnpm --filter @scudra/analyst cli --doctor        # checks Docker, image, keys
 pnpm --filter @scudra/analyst cli --probe         # 7/7 BLOCKED on real Docker
 pnpm dev:analyst
@@ -136,6 +143,11 @@ Vultr instance via the Vultr API, or Solari) plug in behind
 ## Honest limits
 
 Docker containers share the host kernel. This is strong against accidental and
-casual abuse and defeats every probe above, but it is not a hardware boundary. Receipts use a shared-secret HMAC: tamper-evident for whoever holds the key, not third-party attestation (that needs asymmetric signing). The verifier is a model, not a proof — it can be wrong, which is why UNCERTAIN exists and why its verdict is signed into the receipt rather than treated as ground truth.
+casual abuse and defeats every probe above, but it is not a hardware boundary.
+Receipts are signed with Ed25519 and the public key is published, so a third
+party can verify a receipt — but the receipt proves the record is ours and
+unmodified, not that the run was honest: the verifier is a model, not a proof,
+and it can be wrong, which is why UNCERTAIN exists and why its verdict is
+signed into the receipt rather than treated as ground truth.
 For hostile multi-tenant production use, run with **gVisor** (`--runtime=runsc`)
 or a throwaway Vultr VM per task — the provider seam is built for that.

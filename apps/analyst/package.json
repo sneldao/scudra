@@ -14,6 +14,7 @@
     "dev:mock": "SCUDRA_MOCK=1 astro dev"
   },
   "dependencies": {
+    "@scudra/evidence": "workspace:*",
     "@astrojs/node": "^11.1.5",
     "@astrojs/react": "^6.0.5",
     "astro": "^7.2.10",

@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro"
+import { PRODUCT } from "@scudra/shared"
 ---
 
 <Layout
@@ -15,13 +16,16 @@ import Layout from "../../layouts/Layout.astro"
       Blindspot
     </h1>
     <p class="text-lg text-ink-muted leading-relaxed mb-8">
-      A privacy-preserving onchain investigation agent. Resolve an ENS name, run Mobula inside an ephemeral sandbox, enrich off-chain context through a stealth browser, and receive a verdict.
+      Evidence gathering that leaves the investigator invisible. Resolve an ENS name, run Mobula inside an ephemeral
+      sandbox, enrich off-chain context through a stealth browser, and receive a verdict you can take with you —
+      signed, and checkable by anyone holding the public key.
     </p>
 
     <div class="flex flex-wrap gap-3 mb-12">
+      <a href={PRODUCT.url} class="sc-button-primary" rel="noreferrer">Open Blindspot</a>
       <a
         href="https://github.com/sneldao/scudra/tree/main/apps/blindspot"
-        class="sc-button-primary"
+        class="sc-button-secondary"
       >
         Run it locally
       </a>
@@ -38,7 +42,9 @@ import Layout from "../../layouts/Layout.astro"
       <ul class="flex flex-col gap-3 text-ink-muted leading-relaxed list-disc pl-5">
         <li><strong>Ephemeral sandbox.</strong> Mobula API calls run inside a Solari sandbox, so the investigator's IP never touches the data provider.</li>
         <li><strong>Stealth browser.</strong> Off-chain enrichment is fetched through a residential proxy, masking the investigator's fingerprint.</li>
-        <li><strong>Session recording.</strong> The full browser session can be recorded and downloaded for audit.</li>
+        <li><strong>Signed evidence.</strong> Every case ends in an Ed25519-signed receipt. The public key is published, so a third party can verify it — no secret required.</li>
+        <li><strong>Grounded figures.</strong> Every number the verdict relies on is recomputed from the raw records and checked. Unverifiable figures are flagged, not hidden.</li>
+        <li><strong>Your evidence persists.</strong> The subject's raw material expires on a short TTL; the case, its sources and its receipt are yours until you delete them.</li>
         <li><strong>Teardown.</strong> Sandbox is killed, browser is closed, and state is removed after the investigation.</li>
       </ul>
     </div>

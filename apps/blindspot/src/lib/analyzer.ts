@@ -8,18 +8,29 @@ import type { MobulaData, OffChainContext, EnsRecord, RiskAssessment, RiskSignal
 export function assessRisk(target: EnsRecord, onchain: MobulaData, offChain: OffChainContext[]): RiskAssessment {
   const signals: RiskSignal[] = []
 
+  // The metrics the signals below rely on. Computed once, up front, so the
+  // signal rules and the receipt's independent recomputation read the same
+  // numbers — and so every figure a signal cites can be shown.
+  const totalValueUSD = onchain.portfolio.reduce((sum, a) => sum + (a.amountUSD || 0), 0)
+  const sortedPortfolio = [...onchain.portfolio].sort((a, b) => b.amountUSD - a.amountUSD)
+  const topHoldingShare =
+    totalValueUSD > 0 && sortedPortfolio.length > 0 ? sortedPortfolio[0].amountUSD / totalValueUSD : 0
+  const lowLiquidityCount = onchain.positions.filter(
+    (p) => p.token.liquidity !== null && p.token.liquidity < 10000 && p.amountUSD > 100,
+  ).length
+  const buyOnlyCount = onchain.positions.filter((p) => p.buys > 10 && p.sells === 0).length
+  const unreachableSourceCount = offChain.filter((c) => c.title === "" || c.rawSnippet === "").length
+
   // --- Onchain signals ---
 
   // Portfolio concentration: is everything in one token?
   if (onchain.portfolio.length > 0) {
-    const sorted = [...onchain.portfolio].sort((a, b) => b.amountUSD - a.amountUSD)
-    const topShare = onchain.totalValueUSD > 0 ? sorted[0].amountUSD / onchain.totalValueUSD : 0
-    if (topShare > 0.8) {
+    if (topHoldingShare > 0.8) {
       signals.push({
         category: "portfolio",
         label: "High concentration",
         severity: "medium",
-        detail: `${(topShare * 100).toFixed(0)}% of portfolio in a single token (${sorted[0].asset.symbol})`,
+        detail: `${(topHoldingShare * 100).toFixed(0)}% of portfolio in a single token (${sortedPortfolio[0].asset.symbol})`,
       })
     }
   }
@@ -42,26 +53,22 @@ export function assessRisk(target: EnsRecord, onchain: MobulaData, offChain: Off
   }
 
   // Low-liquidity tokens: potential scam/honeypot exposure
-  const lowLiqTokens = onchain.positions.filter(
-    (p) => p.token.liquidity !== null && p.token.liquidity < 10000 && p.amountUSD > 100,
-  )
-  if (lowLiqTokens.length > 3) {
+  if (lowLiquidityCount > 3) {
     signals.push({
       category: "liquidity",
       label: "Multiple low-liquidity positions",
       severity: "medium",
-      detail: `${lowLiqTokens.length} tokens with <$10k liquidity — elevated honeypot/rug risk`,
+      detail: `${lowLiquidityCount} tokens with <$10k liquidity — elevated honeypot/rug risk`,
     })
   }
 
   // Trading frequency: high buy count with low sell count = potential bagholder
-  const bagHolderPositions = onchain.positions.filter((p) => p.buys > 10 && p.sells === 0)
-  if (bagHolderPositions.length > 2) {
+  if (buyOnlyCount > 2) {
     signals.push({
       category: "behavior",
       label: "Buy-only positions",
       severity: "medium",
-      detail: `${bagHolderPositions.length} tokens bought but never sold — bag holder pattern`,
+      detail: `${buyOnlyCount} tokens bought but never sold — bag holder pattern`,
     })
   }
 
@@ -91,13 +98,12 @@ export function assessRisk(target: EnsRecord, onchain: MobulaData, offChain: Off
   // --- Off-chain signals ---
 
   // Website unreachable or empty
-  const failedEnrichment = offChain.filter((c) => c.title === "" || c.rawSnippet === "")
-  if (failedEnrichment.length > 0 && offChain.length > 0) {
+  if (unreachableSourceCount > 0 && offChain.length > 0) {
     signals.push({
       category: "offchain",
       label: "Unreachable off-chain presence",
       severity: "medium",
-      detail: `${failedEnrichment.length}/${offChain.length} linked URLs returned no content — dead links or abandoned project`,
+      detail: `${unreachableSourceCount}/${offChain.length} linked URLs returned no content — dead links or abandoned project`,
     })
   }
 
@@ -124,5 +130,16 @@ export function assessRisk(target: EnsRecord, onchain: MobulaData, offChain: Off
         ? "Moderate risk: several cautionary signals. Proceed with due diligence."
         : "Low-risk profile: no critical signals. Standard caution applies."
 
-  return { overallScore, signals, summary }
+  return {
+    overallScore,
+    signals,
+    summary,
+    totalRealizedPnlUSD: onchain.totalRealizedPnlUSD,
+    totalUnrealizedPnlUSD: onchain.totalUnrealizedPnlUSD,
+    topHoldingShare,
+    lowLiquidityCount,
+    buyOnlyCount,
+    aliasCount: target.aliases.length,
+    unreachableSourceCount,
+  }
 }

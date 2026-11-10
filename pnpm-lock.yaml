@@ -41,6 +41,9 @@ importers:
       '@fontsource/jetbrains-mono':
         specifier: ^5.3.0
         version: 5.3.0
+      '@scudra/evidence':
+        specifier: workspace:*
+        version: link:../../packages/evidence
       astro:
         specifier: ^7.2.10
         version: 7.2.10(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.1)(@types/node@22.20.5)(jiti@1.21.7)(tsx@4.23.13)(yaml@2.9.0)
@@ -90,6 +93,9 @@ importers:
       '@fontsource/jetbrains-mono':
         specifier: ^5.3.0
         version: 5.3.0
+      '@scudra/evidence':
+        specifier: workspace:*
+        version: link:../../packages/evidence
       '@solarisdk/browser':
         specifier: ^0.1.1
         version: 0.1.2
@@ -262,6 +268,15 @@ importers:
       tsx:
         specifier: ^4.19.2
         version: 4.23.13
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.5
+        version: 3.2.7(@types/debug@4.1.13)(@types/node@22.20.5)(jiti@1.21.7)(lightningcss@1.33.0)(tsx@4.23.13)(yaml@2.9.0)
+
+  packages/evidence:
+    devDependencies:
       typescript:
         specifier: ^5.7.2
         version: 5.9.3

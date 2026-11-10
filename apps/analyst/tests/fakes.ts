@@ -6,9 +6,20 @@ import {
   type Sandbox,
   type SandboxProvider,
 } from "../src/lib/providers/types.js"
+import { generateKeyPair, keyId } from "@scudra/evidence"
 
 export const spec = { ...DEFAULT_SPEC, image: "scudra-sandbox:latest" }
-export const config = { spec, receiptSecret: "unit-test-receipt-secret", inferenceModel: "test-model" }
+
+// A fixed key pair, so a receipt signed in one test can be verified in
+// another without threading key material through every call site.
+export const signingKeys = generateKeyPair()
+export const config = {
+  spec,
+  receiptPrivateKey: signingKeys.privateKeyPem,
+  receiptPublicKey: signingKeys.publicKeyPem,
+  receiptKeyId: keyId(signingKeys.publicKeyPem),
+  inferenceModel: "test-model",
+}
 export const ok = (stdout: string): ExecResult => ({ exitCode: 0, stdout, stderr: "", timedOut: false, durationMs: 5 })
 export const bad: ExecResult = { exitCode: 1, stdout: "", stderr: "NameError: x", timedOut: false, durationMs: 5 }
 

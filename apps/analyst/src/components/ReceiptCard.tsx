@@ -30,6 +30,7 @@ export default function ReceiptCard({ receipt }: { receipt: Receipt }) {
     ["output sha256", receipt.stdoutSha256 ?? "—"],
     ["dataset sha256", receipt.datasetSha256 ?? "—"],
     ...receipt.artifacts.map((a): [string, string] => [a.name, `${a.sha256} · ${a.bytes} B`]),
+    ["signing key", receipt.keyId],
     ["signature", receipt.signature],
   ]
   return (
@@ -48,7 +49,7 @@ export default function ReceiptCard({ receipt }: { receipt: Receipt }) {
           <br />
           <span style={{ fontFamily: "var(--serif)", fontSize: 17 }}>Proof of what ran</span>
         </span>
-        <span className="hint">hashes + HMAC ▾</span>
+        <span className="hint">hashes + Ed25519 ▾</span>
       </summary>
       <div style={{ marginTop: 12 }}>
         {rows.map(([k, v]) => (

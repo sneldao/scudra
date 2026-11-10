@@ -1,5 +1,5 @@
 ---
-import { SITE, NAV } from "../index.js"
+import { SITE, NAV, PRODUCT } from "../index.js"
 ---
 
 <header class="bg-paper/80 backdrop-blur-sm sticky top-0 z-50 border-b border-black/5">
@@ -15,6 +15,15 @@ import { SITE, NAV } from "../index.js"
           </a>
         </li>
       ))}
+      <li>
+        <a
+          href={PRODUCT.url}
+          class="text-ink no-underline px-4 py-2 border border-black/15 rounded-sc hover:border-black/35 transition-colors"
+          rel="noreferrer"
+        >
+          {PRODUCT.name}
+        </a>
+      </li>
     </ul>
   </nav>
 </header>

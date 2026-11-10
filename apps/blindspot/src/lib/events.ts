@@ -43,6 +43,13 @@ export interface CompletePayload {
   egressIp: string
   sandboxDestroyed: boolean
   recordingAvailable: boolean
+  /** The persisted case, so the user can come back to it. Null if not stored. */
+  caseId: string | null
+  /** What this investigation cost, in USD cents. */
+  costUsdCents: number
+  /** Figures the verdict relied on, and how many were independently confirmed. */
+  grounded: number
+  groundingChecked: number
 }
 
 export type EventCallback = (event: InvestigationEvent) => void

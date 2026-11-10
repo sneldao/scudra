@@ -20,7 +20,7 @@ export interface Deps {
   llm: Llm
   /** Optional second model for the verifier pass; defaults to `llm`. */
   verifyLlm?: Llm
-  config: Pick<Config, "spec" | "receiptSecret"> & { inferenceModel?: string }
+  config: Pick<Config, "spec" | "receiptPrivateKey" | "receiptKeyId"> & { inferenceModel?: string }
 }
 
 export const MAX_TASK = 500
@@ -110,8 +110,9 @@ async function withSandbox(
           stdoutSha256: facts.stdout !== null ? sha256(facts.stdout) : null,
           datasetSha256: dataset ? sha256(dataset) : null,
           artifacts: facts.artifacts.map((a) => ({ name: a.name, sha256: a.sha256, bytes: a.bytes })),
+          keyId: deps.config.receiptKeyId,
         },
-        deps.config.receiptSecret,
+        deps.config.receiptPrivateKey,
       )
       onEvent({ type: "receipt", receipt })
     }

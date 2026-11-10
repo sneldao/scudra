@@ -7,7 +7,9 @@
     "paths": {
       "@/*": ["src/*"],
       "@client/*": ["src/client/*"],
-      "@server/*": ["src/server/*"]
+      "@server/*": ["src/server/*"],
+      "@scudra/evidence": ["../../packages/evidence/src/index.ts"],
+      "@scudra/evidence/*": ["../../packages/evidence/src/*"]
     },
     "target": "ES2022",
     "module": "ESNext",
@@ -15,8 +17,7 @@
     "esModuleInterop": true,
     "strict": true,
     "skipLibCheck": true,
-    "outDir": "dist",
-    "rootDir": "."
+    "outDir": "dist"
   },
   "include": ["src", "tests", "astro.config.mjs", ".astro/types.d.ts"],
   "exclude": ["dist", "node_modules"]

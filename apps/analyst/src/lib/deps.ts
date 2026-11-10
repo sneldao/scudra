@@ -14,7 +14,6 @@ export function getGate(max: number): Gate {
 export function buildDeps(): { deps: Deps; config: Config } | { problem: string } {
   const config = loadConfig()
   if (process.env.SCUDRA_MOCK === "1") {
-    config.receiptSecret ||= "dev-only-receipt-secret-not-for-production"
     config.inferenceModel ||= "mock-model"
     return { config, deps: { provider: getProvider(config.provider), llm: mockLlm, config } }
   }
@@ -26,18 +25,15 @@ export function buildDeps(): { deps: Deps; config: Config } | { problem: string 
     deps: {
       provider: getProvider(config.provider),
       llm: vultrLlm({ ...llmOpts, model: config.inferenceModel }),
-      verifyLlm: config.inferenceVerifyModel
-        ? vultrLlm({ ...llmOpts, model: config.inferenceVerifyModel })
-        : undefined,
+      verifyLlm: config.inferenceVerifyModel ? vultrLlm({ ...llmOpts, model: config.inferenceVerifyModel }) : undefined,
       config,
     },
   }
 }
 
-/** Probe mode needs no LLM key — but still needs a receipt secret (a dev fallback is used locally). */
+/** Probe mode needs no LLM key — the receipt keys are already handled by loadConfig. */
 export function buildProbeDeps(): { deps: Deps; config: Config } {
   const config = loadConfig()
-  if (!config.receiptSecret) config.receiptSecret = "dev-only-receipt-secret-not-for-production"
   return {
     config,
     deps: { provider: getProvider(config.provider), llm: async () => "", config },

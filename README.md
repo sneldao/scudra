@@ -1,10 +1,20 @@
 # Scudra
 
-A lab for cloud-native agents.
+A lab for cloud-native agents — and one product built with it.
 
 **Scudra** is a collection of real-world recipes, experiences, and thought leadership for browsers, sandboxes, and desktops that run in the cloud.
 
 The original experiences are built on [Solari](https://getsolari.com). The Analyst is provider-agnostic: Vultr (Cloud Compute + Serverless Inference) is the primary runtime, behind a small sandbox-provider interface that Solari and others can implement.
+
+## The product
+
+**Blindspot** is the thing people actually use. Investigate an ENS name in throwaway infrastructure that is gone before anyone can correlate it, and get back a verdict you can take with you — signed, and checkable by anyone holding the public key.
+
+> Evidence gathering that leaves the investigator invisible.
+
+The interesting part is the split. **The subject's data expires** — raw material about a target carries a short TTL and is purged. **The user's evidence does not** — the verdict, the sources, the feedback and the signed receipt live until the user deletes them. An investigator who cannot keep their findings has not bought anything.
+
+Every figure the verdict relies on is recomputed from the raw records and checked. A number that cannot be confirmed is flagged, not quietly printed.
 
 ## Why cloud agents?
 
@@ -18,24 +28,27 @@ A cloud agent is a program whose body is infrastructure: a browser in Frankfurt,
 - **Sandbox** — A disposable VM that boots in seconds, runs code, and is destroyed when the work is done.
 - **Desktop** — A remote GUI for tasks that require a screen: click, type, and observe like a human.
 
-## Featured experience
+## What is here
 
-- **[The Analyst](apps/analyst)** — _Blast Radius Zero._ An LLM (Vultr Serverless Inference) writes code that runs in a locked-down, throwaway container on a Vultr VM. Real output, self-repair, a one-click "attack the sandbox" containment demo, and verified teardown. Built for the Vultr Agent Rush hackathon.
-
-- **[Blindspot](apps/blindspot)** — Privacy-preserving onchain investigation. Resolve an ENS name, run Mobula inside an ephemeral sandbox, enrich off-chain context through a stealth browser, and receive a verdict.
+- **[Blindspot](apps/blindspot)** — the product. Privacy-preserving onchain investigation with signed, checkable evidence. [Live](https://blindspot.persidian.com) · the 3D dossier at `/dossier`.
+- **[The Analyst](apps/analyst)** — _Blast Radius Zero._ An LLM (Vultr Serverless Inference) writes code that runs in a locked-down, throwaway container on a Vultr VM. Real output, self-repair, a one-click "attack the sandbox" containment demo, and verified teardown.
+- **[packages/evidence](packages/evidence)** — the verifiable-output primitives both apps share: canonical encoding, content hashing, asymmetric signing, and answer grounding. A receipt from either experience is checked by the same code.
+- **[The Witness](apps/witness)** · **[The Builder](apps/builder)** — lab artifacts and recipes, not products.
 
 ## Repository structure
 
 ```
 scudra/
 ├── apps/
-│   ├── site/        # Main site: manifesto, recipes, experiences
+│   ├── site/        # The lab: manifesto, recipes, experiences, waitlist
+│   ├── blindspot/   # THE PRODUCT: signed, checkable onchain investigation
 │   ├── analyst/     # Blast Radius Zero: sandboxed code agent on Vultr
-│   ├── blindspot/   # Flagship interactive experience
-│   └── witness/     # The Witness: live geo-diff experience
+│   ├── witness/     # The Witness: live geo-diff experience (lab artifact)
+│   └── builder/     # The Builder: sandbox preview (lab artifact)
 ├── packages/
+│   ├── evidence/    # Shared verifiable-output primitives
 │   └── shared/      # Design tokens and shared UI
-├── content/         # Long-form writing and recipe source material
+├── content/         # Long-form writing, roadmap, and post-mortems
 └── examples/        # Original Solari cookbook examples
 ```
 
@@ -45,17 +58,14 @@ scudra/
 # Install dependencies (also installs git hooks via the prepare script)
 pnpm install
 
-# Start the main site
+# Start the main site (the lab)
 pnpm dev:site
 
-# In another terminal, start the Blindspot experience
+# In another terminal, start the product
 pnpm dev:blindspot
 
 # The Analyst (needs Docker + Vultr inference key, see apps/analyst/README.md)
 pnpm dev:analyst
-
-# Or the Witness geo-diff experience
-pnpm dev:witness
 ```
 
 ## Development
@@ -67,9 +77,13 @@ pnpm test           # Unit tests (Vitest)
 pnpm format         # Prettier across the repo
 ```
 
-Git hooks (gitleaks secret scan, ruff, tsc) are symlinked by
-`scripts/install-hooks.sh`, which runs automatically on `pnpm install`.
-Run it manually if the hooks change: `bash scripts/install-hooks.sh`.
+Git hooks (gitleaks secret scan, ruff, tsc) are symlinked by `scripts/install-hooks.sh`, which runs automatically on `pnpm install`. Run it manually if the hooks change: `bash scripts/install-hooks.sh`.
+
+## Where this is going
+
+- [`content/long-term-strategy.md`](content/long-term-strategy.md) — the strategy: one product, one user, one wedge, and the rules we now build by.
+- [`content/postmortem-agent-rush.md`](content/postmortem-agent-rush.md) — why we lost the Agent Rush hackathon, and what we learned.
+- [`content/roadmap.md`](content/roadmap.md) — the operating plan.
 
 ## The Cloud Agent Manifesto
 
@@ -86,9 +100,6 @@ Each recipe is a real, runnable agent:
 - [Browser Profiles — The Chameleon](content/recipes/browser-profiles.md)
 - [Session Recording — The Archivist](content/recipes/the-archivist.md)
 - [Sandbox Preview — The Builder](content/recipes/the-builder.md)
-
-See [`content/roadmap.md`](content/roadmap.md) for the full operating plan:
-the characters, the thesis, the sequencing, and the publishing formula.
 
 ## Built for
 

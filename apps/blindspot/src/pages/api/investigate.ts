@@ -9,6 +9,8 @@ import type { APIRoute } from "astro"
 import { investigate, MissingConfigError } from "../../lib/orchestrator.js"
 import { isValidEnsName } from "../../lib/ens.js"
 import { checkRateLimit, releaseSlot } from "../../server/rate-limit.js"
+import { getStore } from "../../server/store-singleton.js"
+import { estimateInvestigationCostUsdCents } from "../../lib/cost.js"
 import type { InvestigationEvent } from "../../lib/events.js"
 
 export const GET: APIRoute = async ({ url, clientAddress }) => {
@@ -50,6 +52,8 @@ export const GET: APIRoute = async ({ url, clientAddress }) => {
         await investigate(ensName, {
           outputDir: "reports",
           onEvent: sendEvent,
+          store: getStore(),
+          costUsdCents: estimateInvestigationCostUsdCents(),
         })
       } catch (err) {
         sendEvent({ type: "error", message: userMessage(err) })

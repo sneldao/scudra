@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro"
+import { PRODUCT } from "@scudra/shared"
 ---
 
 <Layout>
@@ -43,9 +44,26 @@ import Layout from "../layouts/Layout.astro"
 
   <section class="py-20">
     <div class="sc-container">
+      <h2 class="font-serif text-3xl mb-4" data-reveal>What we are building</h2>
+      <p class="text-ink-muted max-w-[60ch] mb-8 leading-relaxed" data-reveal>
+        The lab is the top of the funnel. Underneath it is one product, and it has a real user with real budgets:
+        investigators, bounty hunters, and journalists who need a subject&rsquo;s footprint assembled without the
+        subject &mdash; or anyone watching &mdash; ever learning who looked.
+      </p>
+      <div class="flex flex-wrap gap-3" data-reveal>
+        <a href={PRODUCT.url} class="sc-button-accent" rel="noreferrer">Open {PRODUCT.name}</a>
+        <a href="#waitlist" class="sc-button-secondary">Join the waitlist</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="py-16 bg-paper-warm">
+    <div class="sc-container">
       <h2 class="font-serif text-3xl mb-4" data-reveal>Featured experience</h2>
       <p class="text-ink-muted max-w-[60ch] mb-8 leading-relaxed" data-reveal>
-        Blindspot is a privacy-preserving onchain investigation agent. It resolves an ENS name, runs Mobula inside a Solari sandbox, enriches off-chain context through a stealth browser, and delivers a verdict you can take with you.
+        Blindspot resolves an ENS name, runs Mobula inside an ephemeral sandbox, enriches off-chain context through a
+        stealth browser, and delivers a verdict you can take with you &mdash; signed, and checkable by anyone holding
+        the public key.
       </p>
       <div class="flex flex-wrap gap-3" data-reveal>
         <a href="/experiences#blindspot" class="sc-button-accent">Open the dossier</a>
@@ -53,4 +71,78 @@ import Layout from "../layouts/Layout.astro"
       </div>
     </div>
   </section>
+
+  <section id="waitlist" class="py-20">
+    <div class="sc-container">
+      <h2 class="font-serif text-3xl mb-4" data-reveal>Join the waitlist</h2>
+      <p class="text-ink-muted max-w-[60ch] mb-8 leading-relaxed" data-reveal>
+        We are building this for people who investigate things for a living. If that is you, tell us &mdash; we would
+        rather have one real conversation than another month of guessing at what to build.
+      </p>
+      <form id="waitlist-form" class="flex flex-wrap gap-3 items-center max-w-[34rem]" data-reveal>
+        <input
+          id="waitlist-email"
+          type="email"
+          name="email"
+          required
+          placeholder="you@company.com"
+          aria-label="Email address"
+          class="flex-1 min-w-[14rem] px-4 py-3 border border-black/10 rounded-sc bg-paper text-ink"
+        />
+        <button type="submit" class="sc-button-accent">Notify me</button>
+      </form>
+      <p id="waitlist-status" class="text-ink-muted mt-4 text-sm" role="status"></p>
+    </div>
+  </section>
 </Layout>
+
+<script>
+  // The waitlist and the analytics beacon are first-party: they post to the
+  // Blindspot deployment, which stores the address and nothing else. No
+  // cookies, no third party, no identifiers.
+  import { PRODUCT } from "@scudra/shared"
+
+  function beacon(name: string, meta?: Record<string, unknown>) {
+    try {
+      fetch(`${PRODUCT.url}/api/analytics`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, meta }),
+        keepalive: true,
+      })
+    } catch {
+      /* never let analytics break the page */
+    }
+  }
+
+  beacon("page.view", { page: location.pathname })
+
+  const form = document.getElementById("waitlist-form") as HTMLFormElement | null
+  const status = document.getElementById("waitlist-status")
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault()
+    const email = (document.getElementById("waitlist-email") as HTMLInputElement).value.trim()
+    if (!email) return
+    try {
+      const res = await fetch(`${PRODUCT.url}/api/waitlist`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, source: "scudra.dev" }),
+      })
+      const body = await res.json()
+      if (status) {
+        status.textContent = body.ok
+          ? body.already
+            ? "You are already on the list — we will be in touch."
+            : "Thank you. We will be in touch when there is something to try."
+          : body.error || "That did not work. Try again in a moment."
+      }
+      if (body.ok) {
+        form.reset()
+        beacon("waitlist.joined", { source: "scudra.dev" })
+      }
+    } catch {
+      if (status) status.textContent = "Could not reach the list. Try again in a moment."
+    }
+  })
+</script>

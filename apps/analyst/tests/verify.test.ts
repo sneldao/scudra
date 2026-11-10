@@ -22,10 +22,7 @@ describe("verifyRun", () => {
   const base = { task: "total sales", code: "print(1)", result: ok("42"), artifactNames: [], succeeded: true }
   it("sends the task, code and real output to the verifier", async () => {
     let seen: ChatMessage[] = []
-    await verifyRun(
-      async (m) => ((seen = m), "VERDICT: PASS\nfine"),
-      base,
-    )
+    await verifyRun(async (m) => ((seen = m), "VERDICT: PASS\nfine"), base)
     expect(seen[0]!.content).toBe(VERIFY_SYSTEM)
     expect(seen[1]!.content).toContain("total sales")
     expect(seen[1]!.content).toContain("42")
@@ -36,20 +33,14 @@ describe("verifyRun", () => {
   })
   it("a failed run is uncertain without calling the model", async () => {
     let called = false
-    const v = await verifyRun(
-      async () => ((called = true), "VERDICT: PASS"),
-      { ...base, succeeded: false },
-    )
+    const v = await verifyRun(async () => ((called = true), "VERDICT: PASS"), { ...base, succeeded: false })
     expect(called).toBe(false)
     expect(v.verdict).toBe("uncertain")
   })
   it("a verifier outage degrades to uncertain, never a silent pass", async () => {
-    const v = await verifyRun(
-      async () => {
-        throw new Error("inference down")
-      },
-      base,
-    )
+    const v = await verifyRun(async () => {
+      throw new Error("inference down")
+    }, base)
     expect(v.verdict).toBe("uncertain")
     expect(v.reason).toContain("could not run")
   })

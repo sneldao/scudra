@@ -77,6 +77,20 @@ export interface RiskAssessment {
   overallScore: number // 0-100, higher = riskier
   signals: RiskSignal[]
   summary: string
+  /**
+   * The figures the signals above rely on, carried on the assessment.
+   *
+   * A signal that cites a number must be able to show which number it used,
+   * so the receipt can recompute it from the raw records and check the two
+   * agree. These are the metrics, not prose.
+   */
+  totalRealizedPnlUSD: number
+  totalUnrealizedPnlUSD: number
+  topHoldingShare: number
+  lowLiquidityCount: number
+  buyOnlyCount: number
+  aliasCount: number
+  unreachableSourceCount: number
 }
 
 export interface RiskSignal {

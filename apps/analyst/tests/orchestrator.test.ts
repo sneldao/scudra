@@ -99,7 +99,7 @@ describe("orchestrator", () => {
     expect(log.execs[0]).toContain('os.makedirs("/work/out"')
     const receipt = events.find((e) => e.type === "receipt")!
     if (receipt.type !== "receipt") throw new Error()
-    expect(verifyReceipt(receipt.receipt, config.receiptSecret)).toBe(true)
+    expect(verifyReceipt(receipt.receipt, config.receiptPublicKey)).toBe(true)
     expect(receipt.receipt.artifacts[0]!.sha256).toBe(art.sha256)
     expect(receipt.receipt.datasetSha256).not.toBeNull()
     expect(receipt.receipt.outcome).toBe("ok")

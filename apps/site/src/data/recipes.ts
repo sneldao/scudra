@@ -13,13 +13,13 @@ export const recipes: Recipe[] = [
   {
     slug: "blindspot",
     title: "Blindspot — The Investigator",
-    tagline: "Privacy-preserving onchain investigation.",
+    tagline: "Evidence gathering that leaves the investigator invisible.",
     description:
-      "Resolve an ENS name, run Mobula inside an ephemeral sandbox, enrich off-chain context through a stealth browser, and deliver a verdict. The investigator's identity, traffic, and history are protected.",
+      "Resolve an ENS name, run Mobula inside an ephemeral sandbox, enrich off-chain context through a stealth browser, and deliver a signed, checkable verdict. The investigator's identity, traffic, and history are protected; their evidence is not.",
     primitives: ["browser", "sandbox"],
     status: "live",
     source: "apps/blindspot",
-    demo: "/experiences/blindspot",
+    demo: "https://blindspot.persidian.com",
   },
   {
     slug: "stealth-scraper",

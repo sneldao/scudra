@@ -1,11 +1,11 @@
-# Blindspot — Privacy-Preserving Onchain Investigation Agent
+# Blindspot — Evidence gathering that leaves the investigator invisible
 
 Investigate any onchain actor by ENS name, with the investigator's identity,
-traffic, and history all protected by Solari's ephemeral sandboxes and stealth
-browsers.
+traffic, and history all protected by ephemeral sandboxes and stealth
+browsers — and get back a verdict you can keep, share, and have checked.
 
-Built for [Common S3nse Hackathon](https://commons3nse.cryptocanal.org/hackathon)
-at Cypherpunk Week Amsterdam 2026. Targets the ENS and Mobula bounties.
+**This is Scudra's product.** The lab is the funnel; this is the thing people
+pay for. See [`content/long-term-strategy.md`](../../content/long-term-strategy.md).
 
 ## The privacy inversion
 
@@ -23,155 +23,133 @@ Three layers of metadata are protected:
 | **That** | That an investigation occurred    | Ephemeral sandbox, killed after, no persistent state               |
 | **What** | What onchain data was queried     | Mobula API calls run inside the sandbox, not the investigator's IP |
 
+## The other half: your evidence persists
+
+The infrastructure leaves no trace. **Your findings do not** — and that is the
+design, not an oversight.
+
+| Data                          | Lifetime                                      |
+| ----------------------------- | --------------------------------------------- |
+| The subject's raw material    | **Expires** — short TTL, purged automatically |
+| The verdict, signals, sources | **Persists** until you delete the case        |
+| The signed receipt            | **Persists** — verifiable by anyone           |
+
+An investigator who cannot keep their findings has not bought anything. And a
+user who cannot delete what they gathered is carrying a liability. Both are
+one click away.
+
+## The signed receipt
+
+Every case ends in a receipt: what was claimed, what was observed, and a
+signature over the two.
+
+Three independent properties, and it matters that they are independent:
+
+1. **Content** — the claims and observations are hashed, so any edit is detectable.
+2. **Origin** — the signature is Ed25519, and the **public key is published**
+   at `GET /api/verify`. A third party can check the receipt without a
+   secret and without trusting us.
+3. **Grounding** — every figure the verdict relies on is recomputed from the
+   raw records by an independent path and compared. A figure that cannot be
+   confirmed is **flagged, not hidden**.
+
+The signature alone proves nothing was edited _after_ signing. It does not
+prove the contents were true when signed. Grounding is what closes that gap.
+
+The primitives live in [`packages/evidence`](../../packages/evidence) and are
+shared with The Analyst, so a receipt from either experience is verified by
+the same code.
+
 ## How ENS is load-bearing
 
 ENS is not cosmetic here. It is the discovery and enrichment layer:
 
-- **Discovery**: The investigator queries by ENS **name**, not raw address. The
+- **Discovery**: the investigator queries by ENS _name_, not raw address. The
   name resolves to the target.
 - **Enrichment signals**: ENS text records (website, Twitter, GitHub, avatar,
   description) drive the off-chain context the stealth browser fetches.
-- **Identity correlation**: Reverse lookup catches aliases — multiple names on
+- **Identity correlation**: reverse lookup catches aliases — multiple names on
   one address is a signal worth surfacing in the risk assessment.
-
-Without ENS, you'd have a raw address and no off-chain signals to enrich.
 
 ## How Mobula is load-bearing
 
 Mobula powers the onchain analysis layer:
 
-- **Portfolio**: Holdings, balances, USD values across chains
-- **Positions with PnL**: Realized and unrealized gains/losses per token
-- **Trade history**: Buy/sell counts, volumes, activity timestamps
+- **Portfolio**: holdings, balances, USD values across chains
+- **Positions with PnL**: realized and unrealized gains/losses per token
+- **Trade history**: buy/sell counts, volumes, activity timestamps
 
-All Mobula API calls execute from **inside the Solari sandbox** — Mobula sees
-the sandbox's ephemeral IP, not the investigator's.
+All Mobula API calls execute from **inside the ephemeral sandbox** — Mobula
+sees the sandbox's ephemeral IP, not the investigator's.
 
 ## Architecture
 
 ```
-pnpm --filter blindspot cli
-  │
-  ├─ 1. LOCAL: ENS resolution (ethers + public RPC)
-  │     name → address, text records, reverse lookup
-  │
-  ├─ 2. SOLARI SANDBOX (ephemeral, killed after):
-  │     curl Mobula API → portfolio, positions/PnL
-  │     (investigator's IP never touches Mobula)
-  │
-  ├─ 3. SOLARI STEALTH BROWSER (residential proxy + recording):
-  │     visit websites from ENS text records
-  │     extract off-chain context
-  │     (target sees a residential IP, not the investigator's)
-  │
-  ├─ 4. ANALYZER: combine signals → risk score
-  │
-  ├─ 5. REPORT: self-contained HTML + privacy manifest
-  │
-  └─ 6. TEARDOWN: sandbox.kill(), browser.close() [releases session],
-        download replay, solari.close()
+Browser ──HTTPS──▶ Astro SSR app (the control plane)
+                     │
+                     ├─ ENS resolution ─────▶ public Ethereum RPC
+                     ├─ Mobula calls ───────▶ inside the ephemeral sandbox
+                     ├─ off-chain context ──▶ stealth browser + residential proxy
+                     ├─ risk assessment ────▶ deterministic rules (no LLM)
+                     ├─ signed receipt ─────▶ Ed25519 + grounding check
+                     └─ case store ─────────▶ SQLite (the user's evidence)
 ```
 
-Steps 2 and 3 run **concurrently** — the Mobula queries and web scraping happen
-in parallel. The browser session is released _before_ the replay download
-(the upload starts on release) and the Solari client closes _after_ it.
+## What a user gets
 
-## Quick start
+- **One field.** Paste an ENS name, get a verdict. No sample data in the
+  primary path, no suggested prompts.
+- **Their cases.** Every investigation is saved, listed, and reopenable.
+- **Export.** JSON for scripts and archives; a printable HTML report for
+  people.
+- **Cost, shown.** What the investigation cost, in the UI.
+- **A way to say we were wrong.** One click — the cheapest research loop
+  there is, and the only one that tells us what to build next.
+- **Delete.** Their case, their call.
 
-From the repository root (this is a pnpm workspace):
+## Run it
 
 ```bash
 pnpm install
 cp apps/blindspot/.env.example apps/blindspot/.env
+pnpm --filter @scudra/blindspot dev
 
-export SOLARI_API_KEY=slr_live_...   # console.getsolari.com
-export MOBULA_API_KEY=...            # admin.mobula.io
-
-# Web UI (3D dossier experience)
-pnpm dev:blindspot
-# → http://localhost:4567
-
-# CLI mode (terminal output + report file)
-pnpm --filter blindspot cli
-
-# Tests
-pnpm --filter blindspot test
+# CLI
+pnpm --filter @scudra/blindspot cli vitalik.eth
 ```
 
-The web UI is a 3D scroll-driven dossier built with Three.js. Each panel is a
-classified document that declassifies as you approach — ink dissolves in
-patches to reveal the investigation data underneath.
+Keys needed: `SOLARI_API_KEY` (sandbox + stealth browser), `MOBULA_API_KEY`
+(onchain data). The receipt signing key is optional — without it an ephemeral
+key is generated, which works but cannot be verified by a third party.
 
-## Tech stack
+## API
 
-- **Astro + React** — app shell, routing, server endpoints (SSE, report serving)
-- **Three.js** — 3D dossier experience (custom shaders, proximity-driven declassification)
-- **Lenis** — smooth scroll
-- **Solari** (`@solarisdk/browser`, `@solarisdk/sdk`) — ephemeral sandboxes + stealth browsers
-- **Ethers.js** — ENS resolution and text record fetching
-- **Mobula API** — onchain portfolio, positions, and PnL data
+| Endpoint                        | What it does                                  |
+| ------------------------------- | --------------------------------------------- |
+| `GET /api/investigate?name`     | SSE stream of the investigation               |
+| `GET /api/cases`                | The user's cases, newest first                |
+| `GET /api/cases/[id]`           | One case in full                              |
+| `DELETE /api/cases/[id]`        | The user deletes their own evidence           |
+| `POST /api/cases/[id]/feedback` | `wrong` / `incomplete` / `right`, plus a note |
+| `GET /api/cases/[id]/export`    | JSON or HTML export, receipt included         |
+| `GET /api/verify`               | The public key                                |
+| `POST /api/verify`              | Check a receipt — no secret, no account       |
+| `POST /api/waitlist`            | Join the waitlist                             |
+| `POST /api/analytics`           | First-party usage events                      |
+| `GET /api/stats`                | The operator's view of how it is being used   |
 
-### Project structure
+## Honest limits
 
-```
-src/
-  pages/          Astro pages + API endpoints
-    index.astro   Main page (renders the React island)
-    api/
-      investigate.ts  SSE endpoint for investigation events
-      report.ts       Report file serving
-  layouts/        Astro layout (HTML shell, fonts, global CSS)
-  components/      React islands
-    BlindspotApp.tsx  Main island (state + Three.js canvas + DOM overlays)
-  client/         Three.js engine (vanilla TS, imported by React island)
-    scene.ts          Renderer, camera, lights, fog
-    panels.ts         Declassification dossier panels
-    redaction-material.ts  Ink dissolution shader (the core UI primitive)
-    camera-curve.ts   Scroll-driven camera path
-    scroll.ts         Lenis smooth scroll
-    chart.ts          3D donut chart
-    texture.ts        HTML-to-texture pipeline
-    fonts.ts          Base64 font embedding for the texture pipeline
-    tokens.ts         sRGB color tokens for the WebGL side
-  lib/            Server-side investigation modules
-    orchestrator.ts   Full pipeline coordinator
-    ens.ts            ENS resolution
-    mobula.ts         Onchain data (via sandbox)
-    sandbox.ts        Solari sandbox management
-    browser.ts        Solari stealth browser
-    analyzer.ts       Risk scoring
-    report.ts         HTML report generation
-    url-guard.ts      SSRF guard for URLs taken from ENS records
-    format.ts         Shared formatting + risk labels
-    types.ts          Shared types
-    events.ts         SSE event types
-  server/         CLI entry point + rate limiting
-    cli.ts
-    rate-limit.ts
-  tests/          Vitest unit tests
-```
-
-## Solari gotchas this project handles
-
-- **`await solari.close()`** — the browser client keeps a loopback proxy open;
-  skip this and the process hangs forever.
-- **`kill()`, not `close()`** — `close()` only drops the local control channel;
-  the VM keeps running until its idle timeout. `kill()` destroys it.
-- **`commands.run` is not shell-interpreted** — `run("curl -s ...")` looks for
-  a binary named `curl -s`. Args go in `args`.
-- **Recording is per-session** — pass `recording: true` at launch time or the
-  replay endpoint 404s forever. The upload is async after release, so poll
-  for ~30s.
-- **`timeoutMs` is a rolling idle window** — it resets on every use, it's not
-  a hard deadline.
-
-## Future: stronger privacy with ENSv2
-
-- **Rotating ENS subnames**: The investigator's own identity is a fresh ENS
-  subname per investigation, so even payment for the service is unlinkable.
-- **CCIP-Read resolvers**: Offchain resolvers that reduce publicly exposed ENS
-  metadata.
-- **ZK proof of authorization**: The investigator proves they're authorized to
-  use the service without revealing who they are.
-
-MIT licensed.
+- The risk assessment is **deterministic rules, not a model**. It is
+  transparent and reproducible, and it is also shallow — it looks for known
+  patterns (concentration, losses, liquidity, buy-only positions, aliasing)
+  and cannot tell you what it does not know.
+- The receipt proves the record is ours and unmodified, and that its figures
+  match an independent recomputation. It does not prove the underlying data
+  provider was honest.
+- The subject's raw material is held for a short TTL and then purged. That is
+  a mitigation, not a guarantee against a subpoena.
+- The Solari free plan does not include stealth mode (it returns 402
+  `FeatureRequiresPlan`), so the off-chain half of an investigation needs a
+  paid plan or our own browser primitive. See
+  [`content/long-term-strategy.md`](../../content/long-term-strategy.md) §2.2.

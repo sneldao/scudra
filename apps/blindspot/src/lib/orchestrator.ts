@@ -26,9 +26,13 @@ import {
 import { assessRisk } from "./analyzer.js"
 import { generateReport } from "./report.js"
 import { formatCompact, riskLabelFor } from "./format.js"
+import { buildReceipt } from "./evidence.js"
+import { loadConfig } from "./config.js"
+import { CaseStore } from "./store.js"
 import type { MobulaData, OffChainContext, InvestigationReport, PrivacyManifest } from "./types.js"
 import type { EventCallback, InvestigationEvent } from "./events.js"
 import { mkdirSync } from "node:fs"
+import { randomUUID } from "node:crypto"
 
 export class MissingConfigError extends Error {
   readonly missing: string[]
@@ -42,10 +46,19 @@ export class MissingConfigError extends Error {
 export interface InvestigateOptions {
   outputDir?: string
   onEvent?: EventCallback
+  /** Persist the case so the user can come back to it. */
+  store?: CaseStore | null
+  /**
+   * Cost of this investigation in USD cents.
+   *
+   * Tracked because agent economics are a decision the user has to make, and
+   * a tool that hides its cost makes that decision impossible.
+   */
+  costUsdCents?: number
 }
 
 export async function investigate(ensName: string, opts: InvestigateOptions = {}): Promise<string> {
-  const { outputDir = "reports", onEvent } = opts
+  const { outputDir = "reports", onEvent, store = null, costUsdCents = 0 } = opts
   const emit = (event: InvestigationEvent) => {
     onEvent?.(event)
   }
@@ -207,6 +220,46 @@ export async function investigate(ensName: string, opts: InvestigateOptions = {}
 
     const reportPath = generateReport(report, outputDir)
 
+    // 6. Sign the receipt and persist the case.
+    //
+    // The receipt is the durable half: the sandbox and browser are already
+    // gone by now, and what remains is a signed, grounded record of what was
+    // found. The case is saved so the user can come back to it — without
+    // persistence, an investigator has bought nothing.
+    const caseId = randomUUID()
+    const config = loadConfig()
+    const { receipt, signals, sources } = buildReceipt({
+      id: caseId,
+      target,
+      onchain: onchain!,
+      offChain,
+      risk,
+      privateKeyPem: config.privateKeyPem,
+      publicKeyPem: config.publicKeyPem,
+    })
+
+    if (store) {
+      try {
+        store.save({
+          id: caseId,
+          ensName: target.name,
+          address: target.address,
+          riskScore: risk.overallScore,
+          riskLabel: riskLabelFor(risk.overallScore),
+          summary: risk.summary,
+          signals,
+          sources,
+          costUsdCents,
+          durationMs: Date.now() - startTime,
+          receipt,
+        })
+      } catch (err) {
+        // A storage failure must not destroy the investigation that already
+        // succeeded — the user still has the report and the receipt.
+        console.error(`  [store] could not persist case: ${(err as Error).message}`)
+      }
+    }
+
     emit({
       type: "complete",
       report: {
@@ -219,6 +272,10 @@ export async function investigate(ensName: string, opts: InvestigateOptions = {}
         egressIp: offChain[0]?.egressIp ?? "unknown",
         sandboxDestroyed: true,
         recordingAvailable: recording.available,
+        caseId: store ? caseId : null,
+        costUsdCents,
+        grounded: receipt.grounding.grounded,
+        groundingChecked: receipt.grounding.checked,
       },
     })
 

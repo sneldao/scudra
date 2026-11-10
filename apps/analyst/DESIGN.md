@@ -42,7 +42,7 @@ a permanent, live part of the interface. On mobile the machine moves to the top.
    verdict is signed into the receipt.
 2. **How it got there** — collapsible trace: each attempt's code and its real
    output. Failed attempts stay visible; self-repair is a feature, not a secret.
-3. **Signed receipt** — hashes of code, output, dataset, artifacts + HMAC.
+3. **Signed receipt** — hashes of code, output, dataset, artifacts + Ed25519.
    "Forge it & verify" flips a field and shows verification fail.
 
 ## The containment moment ("Attack the sandbox ⚡")
